@@ -71,6 +71,11 @@ public class Angle implements Comparable<Angle>
 
     /** Represents an angle of 1 second */
     public final static Angle SECOND = Angle.fromDegrees(1d / 3600d);
+    
+    public final static Pattern PATTERN = Pattern.compile(
+        "([-|\\+]?\\d{1,3}[d|D|\u00B0|\\s](\\s*\\d{1,2}['|\u2019|\\s])?" +
+        "(\\s*\\d{1,2}(\\.\\d+?)??[\"|\u201d|\\s])?\\s*([N|n|S|s|E|e|W|w])?\\s?)"
+    );
 
     private final static double DEGREES_TO_RADIANS = Math.PI / 180d;
     private final static double RADIANS_TO_DEGREES = 180d / Math.PI;
@@ -156,14 +161,14 @@ public class Angle implements Comparable<Angle>
      *
      * @param degrees integer number of degrees, positive.
      * @param minutes integer number of minutes, positive only between 0 and 60.
-     * @param seconds integer number of seconds, positive only between 0 and 60.
+     * @param seconds double number of seconds, positive only between 0 and 60.
      *
      * @return a new angle whose size in degrees is given by <code>degrees</code>, <code>minutes</code> and
      *         <code>seconds</code>.
      *
      * @throws IllegalArgumentException if minutes or seconds are outside the 0-60 range or the degrees is negative.
      */
-    public static Angle fromDMS(int degrees, int minutes, int seconds)
+    public static Angle fromDMS(int degrees, int minutes, double seconds)
     {
         if (degrees < 0)
         {
@@ -241,10 +246,7 @@ public class Angle implements Comparable<Angle>
             throw new IllegalArgumentException(message);
         }
         // Check for string format validity
-        String regex = "([-|\\+]?\\d{1,3}[d|D|\u00B0|\\s](\\s*\\d{1,2}['|\u2019|\\s])?"
-            + "(\\s*\\d{1,2}[\"|\u201d|\\s])?\\s*([N|n|S|s|E|e|W|w])?\\s?)";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(dmsString + " ");
+        Matcher matcher = PATTERN.matcher(dmsString + " ");
         if (!matcher.matches())
         {
             String message = Logging.getMessage("generic.ArgumentOutOfRange", dmsString);
@@ -284,7 +286,7 @@ public class Angle implements Comparable<Angle>
         String[] DMS = dmsString.split(" ");
         int d = Integer.parseInt(DMS[0]);
         int m = DMS.length > 1 ? Integer.parseInt(DMS[1]) : 0;
-        int s = DMS.length > 2 ? Integer.parseInt(DMS[2]) : 0;
+        double s = DMS.length > 2 ? Double.parseDouble(DMS[2]) : 0;
 
         return fromDMS(d, m, s).multiply(sign);
     }
