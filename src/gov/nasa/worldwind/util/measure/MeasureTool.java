@@ -183,7 +183,7 @@ public class MeasureTool extends AVListImpl implements Disposable {
     protected CustomRenderableLayer shapeLayer;
     protected Path line;
     protected SurfaceShape surfaceShape;
-    protected ScreenAnnotation annotation;
+    protected GlobeAnnotation annotation;
 
     protected Color lineColor = Color.YELLOW;
     protected Color fillColor = new Color(.6f, .6f, .4f, .5f);
@@ -304,7 +304,7 @@ public class MeasureTool extends AVListImpl implements Disposable {
         this.annotationAttributes.setTextColor(Color.WHITE);
         this.annotationAttributes.setBackgroundColor(Color.BLACK);
         this.annotationAttributes.setSize(new Dimension(220, 0));
-        this.annotation = new ScreenAnnotation("", new Point(0, 0), this.annotationAttributes);
+        this.annotation = new GlobeAnnotation("", Position.ZERO, this.annotationAttributes);
         this.annotation.getAttributes().setVisible(false);
         this.annotation.getAttributes().setDrawOffset(null); // use defaults
         this.shapeLayer.addRenderable(this.annotation);
