@@ -27,9 +27,9 @@
  */
 package gov.nasa.worldwind.layers;
 
+import gov.nasa.worldwind.render.DeclutteringTextRenderer;
 import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.GeographicText;
-import gov.nasa.worldwind.render.GeographicTextRenderer;
 import gov.nasa.worldwind.util.Logging;
 
 import java.util.Collection;
@@ -42,12 +42,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class TextLayer extends AbstractLayer
 {
-    private final GeographicTextRenderer textRenderer;
+    private final DeclutteringTextRenderer textRenderer;
     private final Collection<GeographicText> geographicTexts;
 
     public TextLayer()
     {
-        this.textRenderer = new GeographicTextRenderer();
+        this.textRenderer = new DeclutteringTextRenderer();
         this.geographicTexts = new ConcurrentLinkedQueue<GeographicText>();
     }
 
