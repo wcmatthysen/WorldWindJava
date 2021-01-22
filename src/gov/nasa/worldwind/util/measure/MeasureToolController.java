@@ -51,6 +51,7 @@ public class MeasureToolController extends MouseAdapter
     protected boolean active = false;
     protected boolean moving = false;
     protected boolean useRubberBand = true;
+    protected boolean stickyAnnotation = false;
     protected boolean freeHand = false;
     protected double freeHandMinSpacing = 100;
 
@@ -109,6 +110,30 @@ public class MeasureToolController extends MouseAdapter
     public void setUseRubberBand(boolean state)
     {
         this.useRubberBand = state;
+    }
+
+    /**
+     * Returns true if this controller is using sticky control point annotations. An annotation is sticky if it
+     * doesn't hide when the mouse moves away from one of the control points. A sticky annotation will cling to the
+     * last control-point that the mouse hovered over.
+     *
+     * @return true if this controller is using sticky control point annotations.
+     */
+    public boolean isStickyAnnotation()
+    {
+        return this.stickyAnnotation;
+    }
+
+    /**
+     * Sets whether this controller should use sticky control point annotations. An annotation is sticky if it
+     * doesn't hide when the mouse moves away from one of the control points. A sticky annotation will cling to the
+     * last control-point that the mouse hovered over.
+     *
+     * @param state true if this controller should use sticky control point annotations.
+     */
+    public void setStickyAnnotation(boolean state)
+    {
+        this.stickyAnnotation = state;
     }
 
     /**
@@ -172,7 +197,30 @@ public class MeasureToolController extends MouseAdapter
         if (this.armed != armed)
         {
             this.armed = armed;
+            onArmedChanged(armed);
             this.measureTool.firePropertyChange(MeasureTool.EVENT_ARMED, !armed, armed);
+        }
+    }
+
+    private void onArmedChanged(boolean armed)
+    {
+        if (this.measureTool.isShowAnnotation())
+        {
+            if (!armed)
+            {
+                // Hide annotation when disarming measure tool.
+                this.measureTool.updateAnnotation(null);
+            }
+            else
+            {
+                // When re-arming measure tool, check if sticky flag is set.
+                // If it is, then show annotation at previously higlighted
+                // control point.
+                if (this.stickyAnnotation && this.lastPickedObject != null)
+                {
+                    this.measureTool.updateAnnotation(this.lastPickedObject.getPosition());
+                }
+            }
         }
     }
 
@@ -492,7 +540,7 @@ public class MeasureToolController extends MouseAdapter
             this.lastPickedObject.getAttributes().setHighlighted(false);
             this.lastPickedObject.getAttributes().setBackgroundColor(null); // use default
             this.lastPickedObject = null;
-            if (measureTool.isShowAnnotation())
+            if (measureTool.isShowAnnotation() && !this.stickyAnnotation)
                 measureTool.updateAnnotation(null);
             this.setCursor(null);
         }
