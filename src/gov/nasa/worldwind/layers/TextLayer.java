@@ -67,7 +67,8 @@ public class TextLayer extends AbstractLayer
         this.geographicTexts.add(text);
     }
 
-    public void addGeographicTexts(Iterable<? extends GeographicText> texts) {
+    public void addGeographicTexts(Iterable<? extends GeographicText> texts)
+    {
         if (texts == null)
         {
             String msg = Logging.getMessage("nullValue.IterableIsNull");
@@ -92,6 +93,23 @@ public class TextLayer extends AbstractLayer
             throw new IllegalArgumentException(msg);
         }
         this.geographicTexts.remove(text);
+    }
+
+    public void removeGeographicTexts(Iterable<? extends GeographicText> texts)
+    {
+        if (texts == null)
+        {
+            String msg = Logging.getMessage("nullValue.IterableIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+        for (GeographicText text : texts)
+        {
+            if (text != null)
+            {
+                this.geographicTexts.remove(text);
+            }
+        }
     }
 
     public void removeAllGeographicTexts()
