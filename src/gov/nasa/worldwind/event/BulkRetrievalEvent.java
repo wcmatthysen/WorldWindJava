@@ -44,6 +44,9 @@ public class BulkRetrievalEvent extends WWEvent
 
     /** Constant indicating retrieval success. */
     public static String RETRIEVAL_SUCCEEDED = "gov.nasa.worldwind.retrieve.BulkRetrievable.RetrievalSucceeded";
+    
+    /** Constant indicating cached retrieval. */
+    public static String RETRIEVAL_CACHED = "gov.nasa.worldwind.retrieve.BulkRetrievable.RetrievalCached";
 
     protected String eventType;
     protected String item;

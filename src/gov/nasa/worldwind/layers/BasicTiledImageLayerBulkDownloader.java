@@ -414,8 +414,15 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
                 if (tile == null)
                     continue;
 
-                if (isTileLocalOrAbsent(tile))
-                    continue;  // tile is local or absent
+                if (isTileAbsent(tile))
+                {
+                    continue;
+                }
+                else if (isTileLocal(tile))
+                {
+                    callRetrievalListeners(new BulkRetrievalEvent(this.layer, BulkRetrievalEvent.RETRIEVAL_CACHED, tile.getPath()));
+                    continue;
+                }
 
                 tiles.add(tile);
             }
@@ -423,13 +430,14 @@ public class BasicTiledImageLayerBulkDownloader extends BulkRetrievalThread
         return tiles;
     }
 
-    protected boolean isTileLocalOrAbsent(TextureTile tile)
+    protected boolean isTileAbsent(TextureTile tile)
     {
-        if (this.layer.getLevels().isResourceAbsent(tile))
-            return true;  // tile is absent
-
+        return this.layer.getLevels().isResourceAbsent(tile);
+    }
+    
+    protected boolean isTileLocal(TextureTile tile)
+    {
         URL url = this.fileStore.findFile(tile.getPath(), false);
-
         return url != null && !this.layer.isTextureFileExpired(tile, url, fileStore);
     }
 
