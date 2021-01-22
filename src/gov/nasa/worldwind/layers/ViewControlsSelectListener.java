@@ -319,7 +319,7 @@ public class ViewControlsSelectListener implements SelectListener
             this.viewControlsLayer.highlight(selectedObject);
             this.wwd.redraw();
         }
-        if (event.getEventAction().equals(SelectEvent.DRAG))
+        else if (event.getEventAction().equals(SelectEvent.DRAG))
         {
             // just consume drag events
             event.consume();
