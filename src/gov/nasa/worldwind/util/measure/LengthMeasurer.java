@@ -34,6 +34,7 @@ import gov.nasa.worldwind.util.Logging;
 import gov.nasa.worldwind.render.Polyline;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class to measure length along a path on a globe.
@@ -60,8 +61,8 @@ public class LengthMeasurer implements MeasurableLength {
     private static final double DEFAULT_MAX_SEGMENT_LENGTH = 100e3; // size above which segments are subdivided
     private static final double DEFAULT_MIN_SEGMENT_LENGTH = 30; // minimum length of a terrain following subdivision
 
-    private ArrayList<? extends Position> positions;
-    private ArrayList<? extends Position> subdividedPositions;
+    private List<? extends Position> positions;
+    private List<? extends Position> subdividedPositions;
     private boolean followTerrain = false;
     private String pathType = AVKey.GREAT_CIRCLE;
     private double maxSegmentLength = DEFAULT_MAX_SEGMENT_LENGTH;
@@ -72,7 +73,7 @@ public class LengthMeasurer implements MeasurableLength {
     public LengthMeasurer() {
     }
 
-    public LengthMeasurer(ArrayList<? extends Position> positions) {
+    public LengthMeasurer(List<? extends Position> positions) {
         this.setPositions(positions);
     }
 
@@ -81,11 +82,11 @@ public class LengthMeasurer implements MeasurableLength {
         this.length = -1;
     }
 
-    public ArrayList<? extends Position> getPositions() {
+    public List<? extends Position> getPositions() {
         return this.positions;
     }
 
-    public void setPositions(ArrayList<? extends LatLon> positions, double elevation) {
+    public void setPositions(List<? extends LatLon> positions, double elevation) {
         if (positions == null) {
             String message = Logging.getMessage("nullValue.PositionsListIsNull");
             Logging.logger().severe(message);
@@ -114,7 +115,7 @@ public class LengthMeasurer implements MeasurableLength {
         setPositions(newPositions);
     }
 
-    public void setPositions(ArrayList<? extends Position> positions) {
+    public void setPositions(List<? extends Position> positions) {
         if (positions == null) {
             String message = Logging.getMessage("nullValue.PositionsListIsNull");
             Logging.logger().severe(message);
@@ -376,8 +377,8 @@ public class LengthMeasurer implements MeasurableLength {
      *
      * @return a list of positions with no segment longer then maxLength and elevations following terrain or not.
      */
-    protected static ArrayList<? extends Position> subdividePositions(Globe globe,
-            ArrayList<? extends Position> positions,
+    protected static List<? extends Position> subdividePositions(Globe globe,
+            List<? extends Position> positions,
             double maxLength, boolean followTerrain, String avkeyPathType) {
         return subdividePositions(globe, positions, maxLength, followTerrain, avkeyPathType, 0, positions.size());
     }
@@ -400,8 +401,8 @@ public class LengthMeasurer implements MeasurableLength {
      *
      * @return a list of positions with no segment longer then maxLength and elevations following terrain or not.
      */
-    protected static ArrayList<? extends Position> subdividePositions(Globe globe,
-            ArrayList<? extends Position> positions,
+    protected static List<? extends Position> subdividePositions(Globe globe,
+            List<? extends Position> positions,
             double maxLength, boolean followTerrain, String pathType,
             int start, int count) {
         if (positions == null || positions.size() < start + count) {

@@ -31,7 +31,7 @@ import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class to compute approximations of projected and surface (terrain following) area on a globe.
@@ -60,7 +60,7 @@ public class AreaMeasurer extends LengthMeasurer implements MeasurableArea {
 
     private static final double DEFAULT_AREA_SAMPLING_STEPS = 32; // sampling grid max rows or cols
 
-    private ArrayList<? extends Position> subdividedPositions;
+    private List<? extends Position> subdividedPositions;
     private Cell[][] sectorCells;
     private Double[][] sectorElevations;
     private double areaTerrainSamplingSteps = DEFAULT_AREA_SAMPLING_STEPS;
@@ -70,7 +70,7 @@ public class AreaMeasurer extends LengthMeasurer implements MeasurableArea {
     public AreaMeasurer() {
     }
 
-    public AreaMeasurer(ArrayList<? extends Position> positions) {
+    public AreaMeasurer(List<? extends Position> positions) {
         super(positions);
     }
 
@@ -83,7 +83,7 @@ public class AreaMeasurer extends LengthMeasurer implements MeasurableArea {
     }
 
     @Override
-    public void setPositions(ArrayList<? extends Position> positions) {
+    public void setPositions(List<? extends Position> positions) {
         Sector oldSector = getBoundingSector();
         super.setPositions(positions); // will call clearCachedData()
 
