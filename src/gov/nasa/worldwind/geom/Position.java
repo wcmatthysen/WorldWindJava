@@ -46,12 +46,24 @@ public class Position extends LatLon {
         return new Position(Angle.fromRadians(latitude), Angle.fromRadians(longitude), elevation);
     }
 
+    public static Position fromRadians(double latitude, double longitude) {
+        return new Position(Angle.fromRadians(latitude), Angle.fromRadians(longitude), 0);
+    }
+
     public static Position fromDegrees(double latitude, double longitude, double elevation) {
         return new Position(Angle.fromDegrees(latitude), Angle.fromDegrees(longitude), elevation);
     }
 
     public static Position fromDegrees(double latitude, double longitude) {
         return new Position(Angle.fromDegrees(latitude), Angle.fromDegrees(longitude), 0);
+    }
+
+    public static Position fromLatLon(LatLon latlon, double elevation) {
+        return new Position(latlon, elevation);
+    }
+
+    public static Position fromLatLon(LatLon latlon) {
+        return new Position(latlon, 0);
     }
 
     public Position(Angle latitude, Angle longitude, double elevation) {
@@ -94,6 +106,10 @@ public class Position extends LatLon {
      */
     public double getAltitude() {
         return this.elevation;
+    }
+
+    public LatLon toLatLon() {
+        return new LatLon(this.latitude, this.longitude);
     }
 
     public Position add(Position that) {
