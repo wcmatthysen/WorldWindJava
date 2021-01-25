@@ -34,8 +34,13 @@ import gov.nasa.worldwind.util.Logging;
 
 import com.jogamp.opengl.GL2;
 
+/**
+ * @author dcollins
+ */
 public class BusyImageAnnotation extends ImageAnnotation
 {
+    protected boolean autoUpdate;
+    protected boolean shouldUpdate;
     protected Angle angle;
     protected Angle increment;
     protected long lastFrameTime;
@@ -44,7 +49,8 @@ public class BusyImageAnnotation extends ImageAnnotation
     {
         super(imageSource);
         this.setUseMipmaps(false);
-
+        this.autoUpdate = true;
+        this.shouldUpdate = false;
         this.angle = Angle.ZERO;
         this.increment = Angle.fromDegrees(300);
     }
@@ -67,6 +73,16 @@ public class BusyImageAnnotation extends ImageAnnotation
         a = (a > 180) ? (a - 360) : (a < -180 ? 360 + a : a);
         this.angle = Angle.fromDegrees(a);
     }
+    
+    public void setAutoUpdateState(boolean autoUpdate)
+    {
+        this.autoUpdate = autoUpdate;
+    }
+    
+    public boolean isAutoUpdateState()
+    {
+        return this.autoUpdate;
+    }
 
     public Angle getIncrement()
     {
@@ -88,11 +104,22 @@ public class BusyImageAnnotation extends ImageAnnotation
     public void drawContent(DrawContext dc, int width, int height, double opacity, Position pickPosition)
     {
         super.drawContent(dc, width, height, opacity, pickPosition);
-        this.updateState(dc);
+        if (this.autoUpdate)
+        {
+            this.updateState(dc);
+        }
+        else
+        {
+            if (this.shouldUpdate)
+            {
+                this.updateState(dc);
+                this.shouldUpdate = false;
+            }
+        }
     }
 
-    protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height,
-        WWTexture texture)
+    @Override
+    protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height, WWTexture texture)
     {
         GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
 
@@ -114,10 +141,18 @@ public class BusyImageAnnotation extends ImageAnnotation
         this.setAngle(this.getAngle().add(increment));
 
         // Fire a property change to force a repaint.
-        dc.getView().firePropertyChange(AVKey.VIEW, null, dc.getView());
+        if (this.autoUpdate)
+        {
+            dc.getView().firePropertyChange(AVKey.VIEW, null, dc.getView());
+        }
 
         // Update the frame time stamp.
         this.lastFrameTime = dc.getFrameTimeStamp();
+    }
+    
+    public void doUpdateState()
+    {
+        this.shouldUpdate = true;
     }
 
     protected Angle adjustAngleIncrement(DrawContext dc, Angle unitsPerSecond)
