@@ -62,6 +62,7 @@ public class SurfaceImage extends WWObjectImpl
     private Sector sector;
     private Position referencePosition;
     private double opacity = 1.0;
+    private boolean isVisible = true;
     private boolean pickEnabled = true;
     protected boolean alwaysOnTop = false;
     protected PickSupport pickSupport;
@@ -163,6 +164,16 @@ public class SurfaceImage extends WWObjectImpl
 
         // Update the surface image's geometry. This also clears the current generated texture (if any).
         initializeGeometry(corners);
+    }
+
+    public boolean isVisible()
+    {
+        return this.isVisible;
+    }
+
+    public void setVisible(boolean visible)
+    {
+        this.isVisible = visible;
     }
 
     public boolean isPickEnabled()
@@ -286,6 +297,9 @@ public class SurfaceImage extends WWObjectImpl
 
     public void preRender(DrawContext dc)
     {
+        if (!this.isVisible())
+            return;
+
         if (dc.isOrderedRenderingMode())
             return; // preRender is called twice - during layer rendering then again during ordered surface rendering
 
@@ -328,6 +342,9 @@ public class SurfaceImage extends WWObjectImpl
             throw new IllegalStateException(message);
         }
 
+        if (!this.isVisible())
+            return;
+
         if (dc.isPickingMode() && !this.isPickEnabled())
             return;
 
@@ -350,6 +367,9 @@ public class SurfaceImage extends WWObjectImpl
     @Override
     public void pick(DrawContext dc, Point pickPoint)
     {
+        if (!this.isVisible())
+            return;
+
         // Lazily allocate the pick support property, since it's only used when alwaysOnTop is set to true.
         if (this.pickSupport == null)
             this.pickSupport = new PickSupport();
