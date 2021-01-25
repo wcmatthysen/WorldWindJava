@@ -42,13 +42,13 @@ import java.beans.*;
 import java.util.*;
 
 /**
- * <code>WorldWindowGLCanvas</code> is a lightweight Swing component for displaying WorldWind {@link Model}s (globe and
+ * <code>WorldWindowGLJPanel</code> is a lightweight Swing component for displaying WorldWind {@link Model}s (globe and
  * layers). It's a self-contained component intended to serve as an application's <code>WorldWindow</code>. Construction
  * options exist to specify a specific graphics device and to share graphics resources with another graphics device.
  * <p>
  * Note: The Java SDK for OpenGL (JOGL) support for the underlying {@link GLJPanel} that this class uses has
  * historically been problematic. It works well on some devices but not on others, and its performance varies much more
- * among devices than that of its heavyweight counterpart, {@link WorldWindowGLCanvas}. It's therefore best to use the
+ * among devices than that of its heavyweight counterpart, {@link WorldWindowGLJPanel}. It's therefore best to use the
  * heavyweight component if possible. You can find detailed information on this issue in the <em>Heavyweight and
  * Lightweight Issues</em> section of the <a href="http://download.java.net/media/jogl/doc/userguide/">"JOGL User's
  * Guide"</a>
@@ -57,7 +57,7 @@ import java.util.*;
  * Java VM property "gov.nasa.worldwind.stereo.mode=device" prior to creating an instance of this class. A stereo
  * capable {@link SceneController} such as {@link gov.nasa.worldwind.StereoSceneController} must also be specified in
  * the WorldWind {@link Configuration}. The default configuration specifies a stereo-capable controller. To prevent
- * stereo from being used by subsequently opened {@code WorldWindowGLCanvas}es, set the property to a an empty string,
+ * stereo from being used by subsequently opened {@code WorldWindowGLJPanel}s, set the property to a an empty string,
  * "". If a stereo device cannot be selected and used, this falls back to a non-stereo device that supports WorldWind's
  * minimum requirements.
  * <p>
@@ -79,7 +79,7 @@ public class WorldWindowGLJPanel extends GLJPanel implements WorldWindow, Proper
     /** The drawable to which {@link WorldWindow} methods are delegated. */
     protected final WorldWindowGLDrawable wwd; // WorldWindow interface delegates to wwd
 
-    /** Constructs a new <code>WorldWindowGLCanvas</code> window on the default graphics device. */
+    /** Constructs a new <code>WorldWindowGLJPanel</code> window on the default graphics device. */
     public WorldWindowGLJPanel()
     {
         super(Configuration.getRequiredGLCapabilities(), new BasicGLCapabilitiesChooser());
