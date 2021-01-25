@@ -207,7 +207,7 @@ public class SelectEvent extends WWEvent
      * @return a new list of the objects associated with a picked object marked as on top, or <code>null</code> if
      *         nothing is marked as on top.
      */
-    public List<?> getAllTopObjects()
+    public List<Object> getAllTopObjects()
     {
         return this.hasObjects() ? this.pickedObjects.getAllTopObjects() : null;
     }

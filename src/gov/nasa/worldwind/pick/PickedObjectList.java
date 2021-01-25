@@ -117,7 +117,7 @@ public class PickedObjectList extends ArrayList<PickedObject>
      * @return a new list of the objects associated with a picked object marked as on top, or <code>null</code> if
      *         nothing is marked as on top.
      */
-    public List<?> getAllTopObjects()
+    public List<Object> getAllTopObjects()
     {
         List<Object> list = null; // Lazily create the list to avoid unnecessary allocations.
 
