@@ -30,9 +30,6 @@ package gov.nasa.worldwindx.examples.util;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.render.*;
-import gov.nasa.worldwind.util.Logging;
-
-import com.jogamp.opengl.GL2;
 
 /**
  * @author dcollins
@@ -132,7 +129,7 @@ public abstract class DialogAnnotation extends GlobeAnnotation implements java.a
         this.closeButton.addActionListener(this);
         this.closeButton.setToolTipText(CLOSE_TOOLTIP_TEXT);
 
-        this.busyImage = new BusyImage(BUSY_IMAGE_PATH);
+        this.busyImage = new BusyImageAnnotation(BUSY_IMAGE_PATH);
     }
 
     protected void layoutComponents()
@@ -178,105 +175,5 @@ public abstract class DialogAnnotation extends GlobeAnnotation implements java.a
         attributes.setHighlightScale(1);
         attributes.setInsets(new java.awt.Insets(0, 0, 0, 0));
         attributes.setLeader(AVKey.SHAPE_NONE);
-    }
-
-    //**************************************************************//
-    //********************  Busy Image  ****************************//
-    //**************************************************************//
-
-    protected static class BusyImage extends ImageAnnotation
-    {
-        protected Angle angle;
-        protected Angle increment;
-        protected long lastFrameTime;
-
-        public BusyImage(Object imageSource)
-        {
-            super(imageSource);
-            this.setUseMipmaps(false);
-
-            this.angle = Angle.ZERO;
-            this.increment = Angle.fromDegrees(300);
-        }
-
-        public Angle getAngle()
-        {
-            return this.angle;
-        }
-
-        public void setAngle(Angle angle)
-        {
-            if (angle == null)
-            {
-                String message = Logging.getMessage("nullValue.AngleIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            double a = angle.degrees % 360;
-            a = (a > 180) ? (a - 360) : (a < -180 ? 360 + a : a);
-            this.angle = Angle.fromDegrees(a);
-        }
-
-        public Angle getIncrement()
-        {
-            return this.increment;
-        }
-
-        public void setIncrement(Angle angle)
-        {
-            if (angle == null)
-            {
-                String message = Logging.getMessage("nullValue.AngleIsNull");
-                Logging.logger().severe(message);
-                throw new IllegalArgumentException(message);
-            }
-
-            this.increment = angle;
-        }
-
-        public void drawContent(DrawContext dc, int width, int height, double opacity, Position pickPosition)
-        {
-            super.drawContent(dc, width, height, opacity, pickPosition);
-            this.updateState(dc);
-        }
-
-        protected void transformBackgroundImageCoordsToAnnotationCoords(DrawContext dc, int width, int height,
-            WWTexture texture)
-        {
-            GL2 gl = dc.getGL().getGL2(); // GL initialization checks for GL2 compatibility.
-
-            // Rotate around an axis originating from the center of the image and coming out of the screen.
-            double hw = (double) texture.getWidth(dc) / 2d;
-            double hh = (double) texture.getHeight(dc) / 2d;
-            gl.glTranslated(hw, hh, 0);
-            gl.glRotated(-this.getAngle().degrees, 0, 0, 1);
-            gl.glTranslated(-hw, -hh, 0);
-
-            super.transformBackgroundImageCoordsToAnnotationCoords(dc, width, height, texture);
-        }
-
-        protected void updateState(DrawContext dc)
-        {
-            // Increment the angle by a fixed increment each frame.
-            Angle increment = this.getIncrement();
-            increment = this.adjustAngleIncrement(dc, increment);
-            this.setAngle(this.getAngle().add(increment));
-
-            // Fire a property change to force a repaint.
-            dc.getView().firePropertyChange(AVKey.VIEW, null, dc.getView());
-
-            // Update the frame time stamp.
-            this.lastFrameTime = dc.getFrameTimeStamp();
-        }
-
-        protected Angle adjustAngleIncrement(DrawContext dc, Angle unitsPerSecond)
-        {
-            long millis = dc.getFrameTimeStamp() - this.lastFrameTime;
-            double seconds = millis / 1000.0;
-            double degrees = seconds * unitsPerSecond.degrees;
-
-            return Angle.fromDegrees(degrees);
-        }
     }
 }
