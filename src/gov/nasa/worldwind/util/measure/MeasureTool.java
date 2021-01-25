@@ -304,9 +304,12 @@ public class MeasureTool extends AVListImpl implements Disposable {
         this.annotationAttributes.setTextColor(Color.WHITE);
         this.annotationAttributes.setBackgroundColor(Color.BLACK);
         this.annotationAttributes.setSize(new Dimension(220, 0));
-        this.annotation = new GlobeAnnotation("", Position.ZERO, this.annotationAttributes);
-        this.annotation.getAttributes().setVisible(false);
-        this.annotation.getAttributes().setDrawOffset(null); // use defaults
+        this.annotationAttributes.setVisible(false);
+        this.annotationAttributes.setDrawOffset(null); // use defaults
+        
+        // Annotation
+        this.annotation = createAnnotation();
+        
         this.shapeLayer.addRenderable(this.annotation);
     }
 
@@ -326,6 +329,10 @@ public class MeasureTool extends AVListImpl implements Disposable {
         this.setLabel(PERIMETER_LABEL, Logging.getMessage(PERIMETER_LABEL));
         this.setLabel(RADIUS_LABEL, Logging.getMessage(RADIUS_LABEL));
         this.setLabel(WIDTH_LABEL, Logging.getMessage(WIDTH_LABEL));
+    }
+    
+    protected Annotation createAnnotation() {
+        return new GlobeAnnotation("", Position.ZERO, this.annotationAttributes);
     }
 
     public WorldWindow getWwd() {
