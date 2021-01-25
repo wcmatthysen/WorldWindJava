@@ -297,6 +297,13 @@ public class SurfaceImage extends WWObjectImpl
 
     public void preRender(DrawContext dc)
     {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
         if (!this.isVisible())
             return;
 
@@ -367,6 +374,13 @@ public class SurfaceImage extends WWObjectImpl
     @Override
     public void pick(DrawContext dc, Point pickPoint)
     {
+        if (dc == null)
+        {
+            String message = Logging.getMessage("nullValue.DrawContextIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
+        }
+
         if (!this.isVisible())
             return;
 
