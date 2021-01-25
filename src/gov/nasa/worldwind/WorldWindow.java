@@ -36,6 +36,7 @@ import gov.nasa.worldwind.pick.PickedObjectList;
 import gov.nasa.worldwind.util.PerformanceStatistic;
 
 import com.jogamp.opengl.GLContext;
+import java.awt.Dimension;
 import java.util.*;
 
 /**
@@ -259,6 +260,25 @@ public interface WorldWindow extends AVList
      * @return the <code>GLContext</code> associated with this window. May be null.
      */
     GLContext getContext();
+
+    /**
+     * Resizes this WorldWindow so that it has width <code>width</code> and height
+     * <code>height</code>.
+     * 
+     * @param width the new width of this WorldWindow in pixels.
+     * @param height the new height of this WorldWindow in pixels.
+     */
+    void setSize(int width, int height);
+
+    /**
+     * Returns the size of this WorldWindow in the form of a <code>Dimension</code>
+     * object. The <code>height</code> field of the <code>Dimension</code> object
+     * contains this WorldWindow's height, and the <code>width</code> field of the
+     * <code>Dimension</code> object contains this WorldWindow's width.
+     * 
+     * @return a <code>Dimension</code> object that indicates the size of this WorldWindow.
+     */
+    Dimension getSize();
 
     /**
      * Indicates whether the GPU resource cache is reinitialized when this window is reinitialized.

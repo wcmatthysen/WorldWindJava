@@ -565,4 +565,26 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             model.onMessage(msg);
         }
     }
+
+    @Override
+    public void setSize(int width, int height)
+    {
+        if (this.drawable instanceof Component)
+        {
+            Component component = (Component)this.drawable;
+            component.setSize(width, height);
+        }
+    }
+
+    @Override
+    public Dimension getSize()
+    {
+        Dimension size = null;
+        if (this.drawable instanceof Component)
+        {
+            Component component = (Component)this.drawable;
+            size = component.getSize();
+        }
+        return size;
+    }
 }
