@@ -232,6 +232,7 @@ public class WMSBasicElevationModel extends BasicElevationModel
                 sb.append(this.layerNames);
                 sb.append("&styles=");
                 sb.append(this.styleNames != null ? this.styleNames : "");
+                sb.append("&tiled=TRUE");
                 sb.append("&format=");
                 if (altImageFormat == null)
                     sb.append(this.imageFormat);
