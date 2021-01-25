@@ -709,6 +709,12 @@ public class Angle implements Comparable<Angle>
         return lon > 180 ? lon - 360 : lon < -180 ? 360 + lon : lon;
     }
 
+    public static double normalizedDegreesAbsolute(double degrees)
+    {
+        double deg = degrees % 360;
+        return deg < 0.0 ? deg + 360 : deg;
+    }
+
     public static Angle normalizedAngle(Angle unnormalizedAngle)
     {
         if (unnormalizedAngle == null)
@@ -745,6 +751,18 @@ public class Angle implements Comparable<Angle>
         return Angle.fromDegrees(normalizedDegreesLongitude(unnormalizedAngle.degrees));
     }
 
+    public static Angle normalizedAbsolute(Angle unnormalizedAngle)
+    {
+        if (unnormalizedAngle == null)
+        {
+            String msg = Logging.getMessage("nullValue.AngleIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        return Angle.fromDegrees(normalizedDegreesAbsolute(unnormalizedAngle.degrees));
+    }
+
     public Angle normalize()
     {
         return normalizedAngle(this);
@@ -758,6 +776,11 @@ public class Angle implements Comparable<Angle>
     public Angle normalizedLongitude()
     {
         return normalizedLongitude(this);
+    }
+
+    public Angle normalizedAbsolute()
+    {
+        return normalizedAbsolute(this);
     }
 
     public static boolean crossesLongitudeBoundary(Angle angleA, Angle angleB)
@@ -783,6 +806,11 @@ public class Angle implements Comparable<Angle>
     public static boolean isValidLongitude(double value)
     {
         return value >= -180 && value <= 180;
+    }
+
+    public static boolean isValidAbsolute(double value)
+    {
+        return value >= 0 && value <= 360;
     }
 
     public static Angle max(Angle a, Angle b)
