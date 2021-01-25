@@ -80,7 +80,7 @@ public class BasicElevationModelBulkDownloader extends BulkRetrievalThread
         super(elevationModel, sector, resolution, elevationModel.getDataFileStore(), listener);
 
         this.elevationModel = elevationModel;
-        this.level = computeLevelForResolution(sector, resolution);
+        this.level = elevationModel.computeLevelForResolution(sector, resolution);
     }
 
     /**
@@ -104,7 +104,7 @@ public class BasicElevationModelBulkDownloader extends BulkRetrievalThread
         super(elevationModel, sector, resolution, fileStore, listener);
 
         this.elevationModel = elevationModel;
-        this.level = computeLevelForResolution(sector, resolution);
+        this.level = elevationModel.computeLevelForResolution(sector, resolution);
     }
 
     public void run()
@@ -270,7 +270,7 @@ public class BasicElevationModelBulkDownloader extends BulkRetrievalThread
 
     protected long estimateMissingTilesCount(int numSamples)
     {
-        int maxLevel = computeLevelForResolution(sector, resolution);
+        int maxLevel = this.elevationModel.computeLevelForResolution(sector, resolution);
         // Total expected tiles
         long totCount = 0;
         for (int levelNumber = 0; levelNumber <= maxLevel; levelNumber++)
@@ -387,45 +387,6 @@ public class BasicElevationModelBulkDownloader extends BulkRetrievalThread
         return count > 0 ? size / count : 0;
     }
 
-    protected int computeLevelForResolution(Sector sector, double resolution)
-    {
-        if (sector == null)
-        {
-            String message = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.logger().severe(message);
-            throw new IllegalStateException(message);
-        }
-
-        // Find the first level exceeding the desired resolution
-        double texelSize;
-        Level targetLevel = this.elevationModel.getLevels().getLastLevel();
-        for (int i = 0; i < this.elevationModel.getLevels().getLastLevel().getLevelNumber(); i++)
-        {
-            if (this.elevationModel.getLevels().isLevelEmpty(i))
-                continue;
-
-            texelSize = this.elevationModel.getLevels().getLevel(i).getTexelSize();
-            if (texelSize > resolution)
-                continue;
-
-            targetLevel = this.elevationModel.getLevels().getLevel(i);
-            break;
-        }
-
-        // Choose the level closest to the resolution desired
-        if (targetLevel.getLevelNumber() != 0 && !this.elevationModel.getLevels().isLevelEmpty(
-            targetLevel.getLevelNumber() - 1))
-        {
-            Level nextLowerLevel = this.elevationModel.getLevels().getLevel(targetLevel.getLevelNumber() - 1);
-            double dless = Math.abs(nextLowerLevel.getTexelSize() - resolution);
-            double dmore = Math.abs(targetLevel.getTexelSize() - resolution);
-            if (dless < dmore)
-                targetLevel = nextLowerLevel;
-        }
-
-        return targetLevel.getLevelNumber();
-    }
-
     protected long countTilesInSector(Sector sector, int levelNumber)
     {
         if (sector == null)
@@ -462,58 +423,11 @@ public class BasicElevationModelBulkDownloader extends BulkRetrievalThread
         return numRows * numCols;
     }
 
-    protected Tile[][] getTilesInSector(Sector sector, int levelNumber)
-    {
-        if (sector == null)
-        {
-            String msg = Logging.getMessage("nullValue.SectorIsNull");
-            Logging.logger().severe(msg);
-            throw new IllegalArgumentException(msg);
-        }
-
-        Level targetLevel = this.elevationModel.getLevels().getLastLevel();
-        if (levelNumber >= 0)
-        {
-            for (int i = levelNumber; i < this.elevationModel.getLevels().getLastLevel().getLevelNumber(); i++)
-            {
-                if (this.elevationModel.getLevels().isLevelEmpty(i))
-                    continue;
-
-                targetLevel = this.elevationModel.getLevels().getLevel(i);
-                break;
-            }
-        }
-
-        // Collect all the tiles intersecting the input sector.
-        LatLon delta = targetLevel.getTileDelta();
-        LatLon origin = this.elevationModel.getLevels().getTileOrigin();
-        final int nwRow = Tile.computeRow(delta.getLatitude(), sector.getMaxLatitude(), origin.getLatitude());
-        final int nwCol = Tile.computeColumn(delta.getLongitude(), sector.getMinLongitude(), origin.getLongitude());
-        final int seRow = Tile.computeRow(delta.getLatitude(), sector.getMinLatitude(), origin.getLatitude());
-        final int seCol = Tile.computeColumn(delta.getLongitude(), sector.getMaxLongitude(), origin.getLongitude());
-
-        int numRows = nwRow - seRow + 1;
-        int numCols = seCol - nwCol + 1;
-        Tile[][] sectorTiles = new Tile[numRows][numCols];
-
-        for (int row = nwRow; row >= seRow; row--)
-        {
-            for (int col = nwCol; col <= seCol; col++)
-            {
-                TileKey key = new TileKey(targetLevel.getLevelNumber(), row, col, targetLevel.getCacheName());
-                Sector tileSector = this.elevationModel.getLevels().computeSectorForKey(key);
-                sectorTiles[nwRow - row][col - nwCol] = new Tile(tileSector, targetLevel, row, col);
-            }
-        }
-
-        return sectorTiles;
-    }
-
     protected ArrayList<Tile> getMissingTilesInSector(Sector sector, int levelNumber) throws InterruptedException
     {
         ArrayList<Tile> tiles = new ArrayList<Tile>();
 
-        Tile[][] tileArray = getTilesInSector(sector, levelNumber);
+        Tile[][] tileArray = this.elevationModel.getTilesInSector(sector, levelNumber);
         for (Tile[] row : tileArray)
         {
             for (Tile tile : row)
