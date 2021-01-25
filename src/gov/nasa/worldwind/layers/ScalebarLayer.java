@@ -50,15 +50,26 @@ public class ScalebarLayer extends AbstractLayer
     public final static String UNIT_IMPERIAL = "gov.nasa.worldwind.ScalebarLayer.Imperial";
     public final static String UNIT_NAUTICAL = "gov.nasa.worldwind.ScalebarLayer.Nautical";
 
+    // Default parameter values
+    public static final int DEFAULT_WIDTH = 150;
+    public static final int DEFAULT_HEIGHT = 10;
+    public static final Color DEFAULT_COLOR = Color.WHITE;
+    public static final int DEFAULT_BORDER_WIDTH = 20;
+    public static final String DEFAULT_POSITION = AVKey.SOUTHEAST;
+    public static final String DEFAULT_RESIZE_BEHAVIOR = AVKey.RESIZE_SHRINK_ONLY;
+    public static final String DEFAULT_UNIT = UNIT_METRIC;
+    public static final Font DEFAULT_FONT = Font.decode("Arial-PLAIN-12");
+    public static final double DEFAULT_TO_VIEWPORT_SCALE = 0.2;
+
     // Display parameters
-    protected Dimension size = new Dimension(150, 10);
-    protected Color color = Color.white;
-    protected int borderWidth = 20;
-    protected String position = AVKey.SOUTHEAST;
-    protected String resizeBehavior = AVKey.RESIZE_SHRINK_ONLY;
-    protected String unit = UNIT_METRIC;
-    protected Font defaultFont = Font.decode("Arial-PLAIN-12");
-    protected double toViewportScale = 0.2;
+    private Dimension size = new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    private Color color = DEFAULT_COLOR;
+    private int borderWidth = DEFAULT_BORDER_WIDTH;
+    private String position = DEFAULT_POSITION;
+    private String resizeBehavior = DEFAULT_RESIZE_BEHAVIOR;
+    private String unit = DEFAULT_UNIT;
+    private Font defaultFont = DEFAULT_FONT;
+    private double toViewportScale = DEFAULT_TO_VIEWPORT_SCALE;
 
     protected PickSupport pickSupport = new PickSupport();
     protected Vec4 locationCenter = null;

@@ -42,9 +42,13 @@ import java.awt.*;
  */
 public class SkyColorLayer extends RenderableLayer
 {
-    private Color color = new Color(73, 131, 204); // Sky blue
-    private double fadeBottomAltitude = 50e3;
-    private double fadeTopAltitude = 140e3;
+    public static final Color DEFAULT_SKY_COLOR = new Color(73, 131, 204); // Sky blue
+    public static final double DEFAULT_FADE_BOTTOM_ALTITUDE = 50e3;
+    public static final double DEFAULT_FADE_TOP_ALTITUDE = 140e3;
+
+    private Color color = DEFAULT_SKY_COLOR; 
+    private double fadeBottomAltitude = DEFAULT_FADE_BOTTOM_ALTITUDE;
+    private double fadeTopAltitude = DEFAULT_FADE_TOP_ALTITUDE;
 
     /**
      * Paints the sky color background depending on altitude

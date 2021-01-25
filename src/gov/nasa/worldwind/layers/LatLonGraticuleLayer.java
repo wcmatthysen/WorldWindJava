@@ -46,6 +46,13 @@ import java.util.ArrayList;
  */
 public class LatLonGraticuleLayer extends AbstractGraticuleLayer
 {
+    public static final Color DEFAULT_LEVEL0_COLOR = Color.WHITE;
+    public static final Color DEFAULT_LEVEL1_COLOR = Color.GREEN;
+    public static final Color DEFAULT_LEVEL2_COLOR = new Color(0, 102, 255);
+    public static final Color DEFAULT_LEVEL3_COLOR = Color.CYAN;
+    public static final Color DEFAULT_LEVEL4_COLOR = new Color(0, 153, 153);
+    public static final Color DEFAULT_LEVEL5_COLOR = new Color(102, 255, 204);
+
     public static final String GRATICULE_LATLON_LEVEL_0 = "Graticule.LatLonLevel0";
     public static final String GRATICULE_LATLON_LEVEL_1 = "Graticule.LatLonLevel1";
     public static final String GRATICULE_LATLON_LEVEL_2 = "Graticule.LatLonLevel2";
@@ -108,37 +115,43 @@ public class LatLonGraticuleLayer extends AbstractGraticuleLayer
     protected void initRenderingParams()
     {
         GraticuleRenderingParams params;
+        
         // Ten degrees grid
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, Color.WHITE);
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, Color.WHITE);
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL0_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL0_COLOR);
         params.setValue(GraticuleRenderingParams.KEY_LABEL_FONT, Font.decode("Arial-Bold-16"));
         setRenderingParams(GRATICULE_LATLON_LEVEL_0, params);
+        
         // One degree
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, Color.GREEN);
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, Color.GREEN);
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL1_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL1_COLOR);
         params.setValue(GraticuleRenderingParams.KEY_LABEL_FONT, Font.decode("Arial-Bold-14"));
         setRenderingParams(GRATICULE_LATLON_LEVEL_1, params);
+        
         // 1/10th degree - 1/6th (10 minutes)
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, new Color(0, 102, 255));
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, new Color(0, 102, 255));
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL2_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL2_COLOR);
         setRenderingParams(GRATICULE_LATLON_LEVEL_2, params);
+        
         // 1/100th degree - 1/60th (one minutes)
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, Color.CYAN);
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, Color.CYAN);
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL3_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL3_COLOR);
         setRenderingParams(GRATICULE_LATLON_LEVEL_3, params);
+        
         // 1/1000 degree - 1/360th (10 seconds)
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, new Color(0, 153, 153));
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, new Color(0, 153, 153));
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL4_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL4_COLOR);
         setRenderingParams(GRATICULE_LATLON_LEVEL_4, params);
+        
         // 1/10000 degree - 1/3600th (one second)
         params = new GraticuleRenderingParams();
-        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, new Color(102, 255, 204));
-        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, new Color(102, 255, 204));
+        params.setValue(GraticuleRenderingParams.KEY_LINE_COLOR, DEFAULT_LEVEL5_COLOR);
+        params.setValue(GraticuleRenderingParams.KEY_LABEL_COLOR, DEFAULT_LEVEL5_COLOR);
         setRenderingParams(GRATICULE_LATLON_LEVEL_5, params);
     }
 
