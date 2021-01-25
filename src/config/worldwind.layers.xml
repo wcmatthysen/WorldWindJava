@@ -57,6 +57,8 @@
     <Layer className="gov.nasa.worldwind.layers.Earth.CountryBoundariesLayer" actuate="onRequest"/>
     <!--<Layer href="config/Earth/OpenStreetMap.xml" actuate="onRequest"/>-->
     <!--<Layer href="config/Earth/WorldBordersShapefile.xml" actuate="onRequest"/>-->
+    <!--<Layer href="config/Earth/BordersLayer.xml" actuate="onRequest"/>-->
+    <!--<Layer href="config/Earth/CoastlinesLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/EarthAtNightLayer.xml" actuate="onRequest"/>
     <Layer className="gov.nasa.worldwind.layers.Earth.NASAWFSPlaceNameLayer"/>
     <Layer className="gov.nasa.worldwind.layers.WorldMapLayer"/>
