@@ -152,12 +152,23 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
     public void endInitialization()
     {
         initializeCreditsController();
-        this.dashboard = new DashboardController(this, (Component) this.drawable);
+        intializeDashboardController();
     }
 
     protected void initializeCreditsController()
     {
-        new ScreenCreditController((WorldWindow) this.drawable);
+        if (this.drawable instanceof WorldWindow)
+        {
+            new ScreenCreditController((WorldWindow) this.drawable);
+        }
+    }
+
+    protected void intializeDashboardController()
+    {
+        if (this.drawable instanceof Component)
+        {
+            this.dashboard = new DashboardController(this, (Component) this.drawable);
+        }
     }
 
     @Override
@@ -495,15 +506,20 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
      */
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int w, int h)
     {
-        // This is apparently necessary to enable the WWJ canvas to resize correctly with JSplitPane.
-        ((Component) glAutoDrawable).setMinimumSize(new Dimension(0, 0));
+        if (glAutoDrawable instanceof Component)
+        {
+            // This is apparently necessary to enable the WWJ canvas to resize correctly with JSplitPane.
+            ((Component) glAutoDrawable).setMinimumSize(new Dimension(0, 0));
+        }
     }
 
     @Override
     public void redraw()
     {
-        if (this.drawable != null)
+        if (this.drawable instanceof AWTGLAutoDrawable)
+        {
             ((AWTGLAutoDrawable) this.drawable).repaint();
+        }
     }
 
     public void redrawNow()
@@ -574,6 +590,11 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
             Component component = (Component)this.drawable;
             component.setSize(width, height);
         }
+        else if (this.drawable instanceof GLOffscreenAutoDrawable)
+        {
+            GLOffscreenAutoDrawable offscreenDrawable = (GLOffscreenAutoDrawable)this.drawable;
+            offscreenDrawable.setSurfaceSize(width, height);
+        }
     }
 
     @Override
@@ -584,6 +605,13 @@ public class WorldWindowGLAutoDrawable extends WorldWindowImpl implements WorldW
         {
             Component component = (Component)this.drawable;
             size = component.getSize();
+        }
+        else if (this.drawable instanceof GLOffscreenAutoDrawable)
+        {
+            GLOffscreenAutoDrawable offscreenDrawable = (GLOffscreenAutoDrawable)this.drawable;
+            int width = offscreenDrawable.getSurfaceWidth();
+            int height = offscreenDrawable.getSurfaceHeight();
+            size = new Dimension(width, height);
         }
         return size;
     }
