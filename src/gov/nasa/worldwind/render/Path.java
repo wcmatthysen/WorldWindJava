@@ -1330,7 +1330,7 @@ public class Path extends AbstractShape {
             this.clearCachedVbos(dc);
         }
 
-        pathData.setExtent(this.computeExtent(pathData));
+        pathData.setExtent(getExtent(dc.getGlobe(), dc.getVerticalExaggeration()));
 
         // If the shape is less that a pixel in size, don't render it.
         if (this.getExtent() == null || dc.isSmall(this.getExtent(), 1)) {
@@ -2443,49 +2443,15 @@ public class Path extends AbstractShape {
         return Math.sqrt(minDistanceSquared);
     }
 
-    /**
-     * Computes the path's bounding box from the current rendering path. Assumes the rendering path is up-to-date.
-     *
-     * @param current the current data for this shape.
-     *
-     * @return the computed extent.
-     */
-    protected Extent computeExtent(PathData current) {
-        if (current.renderedPath == null) {
-            return null;
-        }
-
-        current.renderedPath.rewind();
-        Box box = Box.computeBoundingBox(new BufferWrapper.FloatBufferWrapper(current.renderedPath),
-                current.vertexStride);
-
-        // The path points are relative to the reference center, so translate the extent to the reference center.
-        box = box.translate(current.getReferencePoint());
-
-        return box;
-    }
-
     @Override
     public Extent getExtent(Globe globe, double verticalExaggeration) {
-        // See if we've cached an extent associated with the globe.
-        Extent extent = super.getExtent(globe, verticalExaggeration);
-        if (extent != null) {
-            return extent;
+        if (globe == null) {
+            String message = Logging.getMessage("nullValue.GlobeIsNull");
+            Logging.logger().severe(message);
+            throw new IllegalArgumentException(message);
         }
-
-        PathData current = (PathData) this.shapeDataCache.getEntry(globe);
-        if (current == null) {
-            return null;
-        }
-
-        // Use the tessellated positions if they exist because they best represent the actual shape.
-        Iterable<? extends Position> posits = current.tessellatedPositions != null
-                ? current.tessellatedPositions : this.getPositions();
-        if (posits == null) {
-            return null;
-        }
-
-        return super.computeExtentFromPositions(globe, verticalExaggeration, posits);
+        
+        return Sector.computeBoundingBox(globe, verticalExaggeration, getSector());
     }
 
     /**
