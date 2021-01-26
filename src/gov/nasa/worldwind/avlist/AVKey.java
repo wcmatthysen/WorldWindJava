@@ -286,6 +286,7 @@ public interface AVKey // TODO: Eliminate unused constants, if any
     final String NUM_LEVELS = "gov.nasa.worldwind.avkey.NumLevels";
     final String NETWORK_RETRIEVAL_ENABLED = "gov.nasa.worldwind.avkey.NetworkRetrievalEnabled";
     final String NORTH = "gov.nasa.worldwind.avkey.North";
+    final String NOMINATIM_GEOCODE_SERVICE = "gov.nasa.worldwind.avkey.NominatimGeocodeService";
 
     final String OFFLINE_MODE = "gov.nasa.worldwind.avkey.OfflineMode";
     final String OPACITY = "gov.nasa.worldwind.avkey.Opacity";
