@@ -503,7 +503,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
             if (closed) {
                 angle = (i != numIntervals) ? i * da : 0;
             } else {
-                angle = i * da;
+                angle = (i != numIntervals) ? i * da : this.theta.radians;
             }
             
             double xLength = this.majorRadius * Math.cos(angle);
@@ -514,7 +514,7 @@ public class SurfaceEllipse extends AbstractSurfaceShape
             double azimuth = (Math.PI / 2.0) - (Math.acos(xLength / distance) * Math.signum(yLength)
                 - this.heading.radians);
             
-            locations.add(LatLon.greatCircleEndPosition(this.center, azimuth, distance / globeRadius));
+            locations.add(LatLon.rhumbEndPosition(this.center, Angle.fromRadians(azimuth), Angle.fromRadians(distance / globeRadius)));
         }
         
         // If the ellipse is not closed, end at the center-position.
