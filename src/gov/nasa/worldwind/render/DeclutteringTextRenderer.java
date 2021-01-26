@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * A simplified version of {@link GeographicTextRenderer} that participates in globe text decluttering. See {@link
+ * A simplified version of {@link BasicGeographicTextRenderer} that participates in globe text decluttering. See {@link
  * ClutterFilter} for more information on decluttering.
  *
  * @author tag
