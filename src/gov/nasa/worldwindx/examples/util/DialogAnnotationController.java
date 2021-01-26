@@ -38,7 +38,7 @@ import java.awt.event.*;
  * @author dcollins
  * @version $Id: DialogAnnotationController.java 1171 2013-02-11 21:45:02Z dcollins $
  */
-public abstract class DialogAnnotationController implements ActionListener, SelectListener
+public class DialogAnnotationController implements ActionListener, SelectListener
 {
     private WorldWindow wwd;
     private boolean enabled;
