@@ -1257,33 +1257,37 @@ public class MeasureTool extends AVListImpl implements Disposable {
             // point's position.
             Angle diffAngle = refAzimiuth.angularDistanceTo(controlAzimuth);
             double globeRadius = this.wwd.getModel().getGlobe().getRadiusAt(this.shapeCenterPosition);
-            double arcLengthMeters = Math.abs(diffAngle.cos()) * Math.abs(controlArcLength.radians) * globeRadius;
+            double arcLengthMeters = Math.abs(controlArcLength.radians) * globeRadius;
 
             double widthMeters;
             double heightMeters;
-
-            if (control.equals(EAST) || control.equals(WEST)) {
-                widthMeters = 2d * arcLengthMeters;
-                heightMeters = (this.shapeRectangle != null) ? this.shapeRectangle.getHeight() : widthMeters;
+            
+            if (this.shapeRectangle == null) {
+                widthMeters = 2d * arcLengthMeters * Math.abs(diffAngle.cos());
+                heightMeters = 2d * arcLengthMeters * Math.abs(diffAngle.sin());
+                
+                if (this.measureShapeType.equals(SHAPE_CIRCLE)) {
+                    double sizeMeters = Math.max(widthMeters, heightMeters);
+                    widthMeters = sizeMeters;
+                    heightMeters = sizeMeters;
+                }
+            } else if (control.equals(EAST) || control.equals(WEST)) {
+                widthMeters = 2d * arcLengthMeters * Math.abs(diffAngle.cos());
+                heightMeters = this.shapeRectangle.getHeight();
 
                 if (this.measureShapeType.equals(SHAPE_CIRCLE)) {
                     //noinspection SuspiciousNameCombination
                     heightMeters = widthMeters;
-                } // during shape creation
-                else if (this.controller != null && this.controller.isActive()) {
-                    heightMeters = 0.6 * widthMeters;
                 }
-            } else // if (control.equals(NORTH) || control.equals(SOUTH))
+            }
+            else // if (control.equals(NORTH) || control.equals(SOUTH))
             {
-                heightMeters = 2d * arcLengthMeters;
-                widthMeters = (this.shapeRectangle != null) ? this.shapeRectangle.getWidth() : heightMeters;
+                heightMeters = 2d * arcLengthMeters * Math.abs(diffAngle.cos());
+                widthMeters = this.shapeRectangle.getWidth();
 
                 if (this.measureShapeType.equals(SHAPE_CIRCLE)) {
                     //noinspection SuspiciousNameCombination
                     widthMeters = heightMeters;
-                } // during shape creation
-                else if (this.controller != null && this.controller.isActive()) {
-                    widthMeters = 0.6 * heightMeters;
                 }
             }
 
@@ -1311,7 +1315,7 @@ public class MeasureTool extends AVListImpl implements Disposable {
             // Compute the shape's center location as the mid point on the great arc between the two diagonal
             // control points.
             LatLon newCenterLocation = LatLon.greatCircleEndPosition(oppositeControlPoint.getPosition(),
-                    diagonalAzimuth, diagonalArcLength.divide(2d));
+                diagonalAzimuth, diagonalArcLength.divide(2d));
 
             // Compute the azimuth and arc length which define a great arc between the new center position and
             // the new corner position.
@@ -1336,21 +1340,23 @@ public class MeasureTool extends AVListImpl implements Disposable {
             }
 
             if (this.measureShapeType.equals(SHAPE_SQUARE)) {
-                // Force the square to have equivalent dimensions.
-                double sizeMeters = Math.min(widthMeters, heightMeters);
-                widthMeters = sizeMeters;
-                heightMeters = sizeMeters;
-
                 // Determine if the dragged control point crossed the shape's horizontal or vertical boundary, causing
                 // the shape to "flip". If so, swap the control point with its horizontal or vertical opposite. This
                 // ensures that control points have the correct orientation. We perform this operation prior to
                 // adjusting the square's fixed corner location, because flipping the shape changes which corner we
                 // adjust.
                 this.swapCornerControls(control, newPosition);
-
+                
                 // Do not move square during initial placement as this will cause square to be offset by half
                 // the diagonal length.
                 if (this.shapeRectangle != null) {
+                    // Force the square to have equivalent dimensions.
+                    // During movement we want the square to snap to the
+                    // minimum of the width and height.
+                    double sizeMeters = Math.min(widthMeters, heightMeters);
+                    widthMeters = sizeMeters;
+                    heightMeters = sizeMeters;
+                    
                     // Forcing the square to have equivalent width and height causes the opposite control point to move
                     // from its current location. Move the square's opposite control point back to its original location
                     // so that the square drags from a fixed corner out to the current control point.
@@ -1359,6 +1365,13 @@ public class MeasureTool extends AVListImpl implements Disposable {
                     if (location != null) {
                         newCenterLocation = location;
                     }
+                } else {
+                    // Force the square to have equivalent dimensions.
+                    // During intial placement we want the square to snap to
+                    // the maximum of the width and height.
+                    double sizeMeters = Math.max(widthMeters, heightMeters);
+                    widthMeters = sizeMeters;
+                    heightMeters = sizeMeters;
                 }
             }
 
@@ -1860,7 +1873,7 @@ public class MeasureTool extends AVListImpl implements Disposable {
                         break;
                     case SHAPE_CIRCLE:
                         this.surfaceShape = new SurfaceCircle(this.shapeCenterPosition,
-                                this.shapeRectangle.width / 2, this.shapeIntervals);
+                                Math.max(this.shapeRectangle.width, this.shapeRectangle.height) / 2, this.shapeIntervals);
                         break;
                     default:
                         break;
