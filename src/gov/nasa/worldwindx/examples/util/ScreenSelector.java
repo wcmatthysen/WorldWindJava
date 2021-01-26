@@ -328,6 +328,8 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
     protected boolean autoEnable;
     protected boolean autoDisable;
     protected boolean armed;
+    
+    protected boolean deepPickEnabled;
 
     public ScreenSelector(WorldWindow worldWindow)
     {
@@ -353,6 +355,8 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.autoEnable = false;
         this.autoDisable = false;
         this.armed = false;
+        
+        this.deepPickEnabled = this.getWwd().getSceneController().isDeepPickEnabled();
         
         // Listen for mouse input on the World Window.
         this.getWwd().getInputHandler().addMouseListener(this);
@@ -426,6 +430,10 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.selectionRect.clearSelection();
         this.getWwd().getSceneController().setPickRectangle(null);
 
+        // Save and set deep-picking to true (allows overlapping objects to be selected).
+        this.deepPickEnabled = this.getWwd().getSceneController().isDeepPickEnabled();
+        this.getWwd().getSceneController().setDeepPickEnabled(true);
+
         // Add and enable the layer that displays this ScreenSelector's selection rectangle.
         LayerList layers = this.getWwd().getModel().getLayers();
 
@@ -446,6 +454,9 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
         this.selectionRect.clearSelection();
         this.getWwd().getSceneController().setPickRectangle(null);
         this.getWwd().removeSelectListener(this);
+
+        // Restores deep-picking to previously saved-state.
+        this.wwd.getSceneController().setDeepPickEnabled(this.deepPickEnabled);
 
         // Remove the layer that displays this ScreenSelector's selection rectangle.
         this.getWwd().getModel().getLayers().remove(this.getLayer());
@@ -719,7 +730,20 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
             {
                 // Respond to box rollover select events when armed.
                 if (event.getEventAction().equals(SelectEvent.BOX_ROLLOVER))
-                    this.selectObjects(event.getAllTopObjects());
+                {
+                    List<Object> selected = null;
+                    if (event.hasObjects())
+                    {
+                        PickedObjectList pickedObjects = event.getObjects();
+                        selected = new ArrayList<Object>(pickedObjects.size());
+                        for (PickedObject pickedObject : pickedObjects)
+                        {
+                            Object object = pickedObject.getObject();
+                            selected.add(object);
+                        }
+                    }
+                    this.selectObjects(selected);
+                }
             }
             catch (Exception e)
             {
