@@ -1348,13 +1348,17 @@ public class MeasureTool extends AVListImpl implements Disposable {
                 // adjust.
                 this.swapCornerControls(control, newPosition);
 
-                // Forcing the square to have equivalent width and height causes the opposite control point to move
-                // from its current location. Move the square's opposite control point back to its original location
-                // so that the square drags from a fixed corner out to the current control point.
-                LatLon location = this.moveShapeByControlPoint(oppositeControlPoint, this.wwd.getModel().getGlobe(),
+                // Do not move square during initial placement as this will cause square to be offset by half
+                // the diagonal length.
+                if (this.shapeRectangle != null) {
+                    // Forcing the square to have equivalent width and height causes the opposite control point to move
+                    // from its current location. Move the square's opposite control point back to its original location
+                    // so that the square drags from a fixed corner out to the current control point.
+                    LatLon location = this.moveShapeByControlPoint(oppositeControlPoint, this.wwd.getModel().getGlobe(),
                         this.shapeOrientation, newCenterLocation, widthMeters, heightMeters);
-                if (location != null) {
-                    newCenterLocation = location;
+                    if (location != null) {
+                        newCenterLocation = location;
+                    }
                 }
             }
 
