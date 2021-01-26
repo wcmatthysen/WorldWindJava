@@ -1480,6 +1480,83 @@ public abstract class TiledImageLayer extends AbstractLayer
         return sectorTiles;
     }
 
+    public Iterable<Tile> getTilesInSectorIterable(Sector sector, int levelNumber)
+    {
+        if (sector == null)
+        {
+            String msg = Logging.getMessage("nullValue.SectorIsNull");
+            Logging.logger().severe(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        Level targetLevel = this.levels.getLastLevel();
+        if (levelNumber >= 0)
+        {
+            for (int i = levelNumber; i < this.getLevels().getLastLevel().getLevelNumber(); i++)
+            {
+                if (this.levels.isLevelEmpty(i))
+                {
+                    continue;
+                }
+
+                targetLevel = this.levels.getLevel(i);
+                break;
+            }
+        }
+
+        // Collect all the tiles intersecting the input sector.
+        LatLon delta = targetLevel.getTileDelta();
+        LatLon origin = this.levels.getTileOrigin();
+        final int nwRow = Tile.computeRow(delta.getLatitude(), sector.getMaxLatitude(), origin.getLatitude());
+        final int nwCol = Tile.computeColumn(delta.getLongitude(), sector.getMinLongitude(), origin.getLongitude());
+        final int seRow = Tile.computeRow(delta.getLatitude(), sector.getMinLatitude(), origin.getLatitude());
+        final int seCol = Tile.computeColumn(delta.getLongitude(), sector.getMaxLongitude(), origin.getLongitude());
+
+        final Level finalLevel = targetLevel;
+
+        return new Iterable<Tile>()
+        {
+            @Override
+            public Iterator<Tile> iterator()
+            {
+                return new Iterator<Tile>()
+                {
+                    private int row = nwRow;
+                    private int col = nwCol;
+
+                    @Override
+                    public boolean hasNext()
+                    {
+                        return this.row >= seRow || this.col <= seCol;
+                    }
+
+                    @Override
+                    public Tile next()
+                    {
+                        TileKey key = new TileKey(finalLevel.getLevelNumber(), this.row, this.col, finalLevel.getCacheName());
+                        Sector tileSector = levels.computeSectorForKey(key);
+                        Tile tile = new Tile(tileSector, finalLevel, this.row, this.col);
+                        if (this.col > seCol)
+                        {
+                            this.row--;
+                            this.col = nwCol;
+                        } else
+                        {
+                            this.col++;
+                        }
+                        return tile;
+                    }
+
+                    @Override
+                    public void remove()
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+    }
+
     protected BufferedImage getImage(TextureTile tile, String mimeType, int timeout) throws Exception
     {
         // Read the image from disk.

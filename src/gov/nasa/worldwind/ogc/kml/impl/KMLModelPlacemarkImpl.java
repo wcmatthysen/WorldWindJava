@@ -158,7 +158,7 @@ public class KMLModelPlacemarkImpl extends WWObjectImpl implements KMLRenderable
      *
      * @see #setColladaRoot(gov.nasa.worldwind.ogc.collada.ColladaRoot)
      */
-    protected ColladaRoot getColladaRoot()
+    public ColladaRoot getColladaRoot()
     {
         return this.colladaRoot.get();
     }
