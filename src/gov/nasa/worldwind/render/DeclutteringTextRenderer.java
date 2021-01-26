@@ -56,12 +56,43 @@ public class DeclutteringTextRenderer
 
     protected final GLU glu = new GLUgl2();
 
+    private String effect = AVKey.TEXT_EFFECT_SHADOW;
+
     // Flag indicating a JOGL text rendering problem. Set to avoid continual exception logging.
     protected boolean hasJOGLv111Bug = false;
 
     public Font getDefaultFont()
     {
         return DEFAULT_FONT;
+    }
+
+    /**
+     * Get the effect used to decorate the text. Can be one of {@link AVKey#TEXT_EFFECT_SHADOW} (default), {@link
+     * AVKey#TEXT_EFFECT_OUTLINE} or {@link AVKey#TEXT_EFFECT_NONE}.
+     *
+     * @return the effect used for text rendering.
+     */
+    public String getEffect()
+    {
+        return this.effect;
+    }
+
+    /**
+     * Set the effect used to decorate the text. Can be one of {@link AVKey#TEXT_EFFECT_SHADOW} (default), {@link
+     * AVKey#TEXT_EFFECT_OUTLINE} or {@link AVKey#TEXT_EFFECT_NONE}.
+     *
+     * @param effect the effect to use for text rendering.
+     */
+    public void setEffect(String effect)
+    {
+        if (effect == null)
+        {
+            String msg = Logging.getMessage("nullValue.StringIsNull");
+            Logging.logger().fine(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.effect = effect;
     }
 
     /**
@@ -278,7 +309,17 @@ public class DeclutteringTextRenderer
                 {
                     background = this.applyOpacity(background, opacity);
                     textRenderer.setColor(background);
-                    textRenderer.draw3D(charSequence, drawPoint.x + xOffset + 1, drawPoint.y + yOffset - 1, 0, 1);
+                    if (this.effect.equals(AVKey.TEXT_EFFECT_SHADOW))
+                    {
+                        textRenderer.draw3D(charSequence, drawPoint.x + xOffset + 1, drawPoint.y + yOffset - 1, 0, 1);
+                    }
+                    else if (this.effect.equals(AVKey.TEXT_EFFECT_OUTLINE))
+                    {
+                        textRenderer.draw3D(charSequence, drawPoint.x + xOffset + 1, drawPoint.y + yOffset - 1, 0, 1);
+                        textRenderer.draw3D(charSequence, drawPoint.x + xOffset + 1, drawPoint.y + yOffset + 1, 0, 1);
+                        textRenderer.draw3D(charSequence, drawPoint.x + xOffset - 1, drawPoint.y + yOffset - 1, 0, 1);
+                        textRenderer.draw3D(charSequence, drawPoint.x + xOffset - 1, drawPoint.y + yOffset + 1, 0, 1);
+                    }
                 }
 
                 textRenderer.setColor(color);
