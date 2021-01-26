@@ -129,6 +129,7 @@ public class DialogAnnotationController implements ActionListener, SelectListene
 
     protected void onActionPerformed(ActionEvent e)
     {
+        this.setCursor(java.awt.Cursor.getDefaultCursor());
     }
 
     //**************************************************************//
@@ -145,11 +146,11 @@ public class DialogAnnotationController implements ActionListener, SelectListene
 
     protected void onSelected(SelectEvent e)
     {
-        // Forward this event to any ButtonAnnotations under the main annotation.
-        this.forwardToButtonAnnotations(this.getAnnotation(), e);
-
         // Change the cursor type if a ButtonAnnotation is beneath the cursor.
         this.updateCursor(e);
+
+        // Forward this event to any ButtonAnnotations under the main annotation.
+        this.forwardToButtonAnnotations(this.getAnnotation(), e);
 
         // Show a tool tip if an ButtonAnnotation is beneath the cursor.
         this.updateToolTip(e);
