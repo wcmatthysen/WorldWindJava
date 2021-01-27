@@ -691,11 +691,14 @@ public abstract class AbstractViewInputHandler implements ViewInputHandler, java
         long interval = now - this.lastPerFrameInputTime;
         if (interval >= this.getPerFrameInputInterval())
         {
-            this.handlePerFrameKeyState(this.keyEventState, GENERATE_EVENTS);
-            this.handlePerFrameMouseState(this.keyEventState, GENERATE_EVENTS);
-            this.handlePerFrameAnimation(GENERATE_EVENTS);
+            boolean handled = this.handlePerFrameKeyState(this.keyEventState, GENERATE_EVENTS) ||
+                this.handlePerFrameMouseState(this.keyEventState, GENERATE_EVENTS) ||
+                this.handlePerFrameAnimation(GENERATE_EVENTS);
             this.lastPerFrameInputTime = now;
-            this.getWorldWindow().redraw();
+            if (handled)
+            {
+                this.getWorldWindow().redraw();
+            }
             return;
         }
 
