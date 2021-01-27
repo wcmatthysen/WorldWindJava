@@ -671,14 +671,20 @@ public abstract class AbstractSurfaceShape extends AbstractSurfaceObject impleme
             throw new IllegalArgumentException(message);
         }
 
-        this.beginDrawing(dc, sdc);
-        try
+        boolean drawInterior = this.getActiveAttributes().isDrawInterior() && this.getActiveAttributes().getInteriorOpacity() > 0;
+        boolean drawExterior = this.getActiveAttributes().isDrawOutline() && this.getActiveAttributes().getOutlineOpacity() > 0;
+
+        if (drawInterior || drawExterior)
         {
-            this.doDrawGeographic(dc, sdc);
-        }
-        finally
-        {
-            this.endDrawing(dc);
+            this.beginDrawing(dc, sdc);
+            try
+            {
+                this.doDrawGeographic(dc, sdc);
+            }
+            finally
+            {
+                this.endDrawing(dc);
+            }
         }
     }
 
