@@ -29,6 +29,7 @@ package gov.nasa.worldwind.geom;
 
 import gov.nasa.worldwind.util.Logging;
 
+import java.io.Serializable;
 import java.util.regex.*;
 
 /**
@@ -38,8 +39,10 @@ import java.util.regex.*;
  * @author Tom Gaskins
  * @version $Id: Angle.java 2419 2014-11-08 04:44:55Z tgaskins $
  */
-public class Angle implements Comparable<Angle>
+public class Angle implements Comparable<Angle>, Serializable
 {
+    private static final long serialVersionUID = 8804184154686826050L;
+
     // Angle format
     public final static String ANGLE_FORMAT_DD = "gov.nasa.worldwind.Geom.AngleDD";
     public final static String ANGLE_FORMAT_DM = "gov.nasa.worldwind.Geom.AngleDM";

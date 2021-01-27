@@ -36,6 +36,7 @@ import gov.nasa.worldwind.tracks.TrackPoint;
 import gov.nasa.worldwind.util.Logging;
 
 import java.awt.geom.*;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -50,8 +51,10 @@ import java.util.*;
  * @version $Id: Sector.java 2397 2014-10-28 17:13:04Z dcollins $
  * @see Angle
  */
-public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>
+public class Sector implements Cacheable, Comparable<Sector>, Iterable<LatLon>, Serializable
 {
+    private static final long serialVersionUID = -7493483886191644363L;
+
     /** A <code>Sector</code> of latitude [-90 degrees, + 90 degrees] and longitude [-180 degrees, + 180 degrees]. */
     public static final Sector FULL_SPHERE = new Sector(Angle.NEG90, Angle.POS90, Angle.NEG180, Angle.POS180);
     public static final Sector EMPTY_SECTOR = new Sector(Angle.ZERO, Angle.ZERO, Angle.ZERO, Angle.ZERO);

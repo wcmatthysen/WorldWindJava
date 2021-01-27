@@ -35,6 +35,8 @@ import gov.nasa.worldwind.geom.*;
  */
 public class MercatorSector extends Sector
 {
+    private static final long serialVersionUID = -5949780841692894175L;
+
     private double minLatPercent, maxLatPercent;
 
     public MercatorSector(double minLatPercent, double maxLatPercent,

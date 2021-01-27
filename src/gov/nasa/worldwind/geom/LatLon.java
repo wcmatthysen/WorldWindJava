@@ -31,6 +31,7 @@ import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.globes.*;
 import gov.nasa.worldwind.util.*;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,8 +45,10 @@ import java.util.regex.Pattern;
  * @author Tom Gaskins
  * @version $Id: LatLon.java 3427 2015-09-30 23:24:13Z dcollins $
  */
-public class LatLon
+public class LatLon implements Serializable
 {
+    private static final long serialVersionUID = 5863704950955584531L;
+
     public static final LatLon ZERO = new LatLon(Angle.ZERO, Angle.ZERO);
     
     private static final String SEPARATORS = "(\\s*[\\s|,]\\s*)";
