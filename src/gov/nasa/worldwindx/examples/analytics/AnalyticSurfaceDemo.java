@@ -28,6 +28,7 @@
 package gov.nasa.worldwindx.examples.analytics;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.analytics.*;
 import gov.nasa.worldwind.avlist.*;
 import gov.nasa.worldwind.data.*;
 import gov.nasa.worldwind.exception.WWRuntimeException;

@@ -29,12 +29,12 @@
 package gov.nasa.worldwindx.examples;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.analytics.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.*;
 import gov.nasa.worldwind.util.ContourBuilder;
-import gov.nasa.worldwindx.examples.analytics.*;
 import gov.nasa.worldwindx.examples.util.ExampleUtil;
 
 import java.awt.*;

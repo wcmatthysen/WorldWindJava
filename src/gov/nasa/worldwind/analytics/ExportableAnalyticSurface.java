@@ -26,7 +26,7 @@
  * notices and licenses PDF found in code directory.
  */
 
-package gov.nasa.worldwindx.examples.analytics;
+package gov.nasa.worldwind.analytics;
 
 import gov.nasa.worldwind.Exportable;
 import gov.nasa.worldwind.ogc.kml.KMLConstants;
