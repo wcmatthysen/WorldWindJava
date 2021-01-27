@@ -3383,13 +3383,32 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             return; // Cannot add locations to this shape.
 
         SurfaceText text = (SurfaceText) this.getShape();
+        Position centroid = text.getPosition();
 
-        if (controlPoint.getPurpose().equals(ROTATION))
+        Globe globe = getWwd().getModel().getGlobe();
+
+        Vec4 terrainPoint = globe.computeEllipsoidalPointFromLocation(terrainPosition);
+        Vec4 previousPoint = globe.computeEllipsoidalPointFromLocation(getPreviousPosition());
+        Vec4 delta = terrainPoint.subtract3(previousPoint);
+
+        Vec4 centerPoint = globe.computeEllipsoidalPointFromLocation(centroid);
+        Vec4 markerPoint = globe.computeEllipsoidalPointFromLocation(controlPoint.getPosition());
+        Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
+
+        if (controlPoint.getPurpose().equals(HEIGHT))
+        {
+            double textSize = text.getTextSize() + (controlPoint.getId() == 0 ? delta.dot3(vMarker) : 0);
+            text.setTextSize(textSize);
+            text.setPosition(centroid);
+        }
+        else if (controlPoint.getPurpose().equals(ROTATION))
         {
             Angle oldHeading = LatLon.greatCircleAzimuth(text.getPosition(), this.getPreviousPosition());
             Angle deltaHeading = LatLon.greatCircleAzimuth(text.getPosition(), terrainPosition).subtract(oldHeading);
             text.setHeading(this.normalizedHeading(text.getHeading(), deltaHeading));
         }
+
+        updateAnnotation(controlPoint);
     }
 
     protected void updateSurfaceTextControlPoints()
@@ -3399,27 +3418,38 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         LatLon centerLocation = text.getPosition();
         double textSizeInMeters = text.getTextSize();
 
-        LatLon rotationLocation = LatLon.greatCircleEndPosition(
+        LatLon scaleLocation = LatLon.greatCircleEndPosition(
             centerLocation,
             Angle.fromDegrees(text.getHeading().degrees),
-            Angle.fromRadians(2 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
+            Angle.fromRadians(1.5 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
+
+        LatLon rotationLocation = LatLon.greatCircleEndPosition(
+            centerLocation,
+            Angle.fromDegrees(text.getHeading().degrees).add(Angle.fromDegrees(45)),
+            Angle.fromRadians(1.5 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
 
         Iterable<Marker> markers = this.getControlPointLayer().getMarkers();
         if (markers == null)
         {
-            List<Marker> markerList = new ArrayList<Marker>(1);
+            List<Marker> markerList = new ArrayList<Marker>(2);
+
+            Position scalePosition = new Position(scaleLocation, 0);
+            markerList.add(this.makeControlPoint(scalePosition, this.getSizeControlPointAttributes(), 0, HEIGHT));
+
             Position rotationPosition = new Position(rotationLocation, 0);
-            markerList.add(this.makeControlPoint(rotationPosition, this.getAngleControlPointAttributes(), 0, ROTATION));
+            markerList.add(this.makeControlPoint(rotationPosition, this.getAngleControlPointAttributes(), 1, ROTATION));
 
             this.getControlPointLayer().setMarkers(markerList);
         }
         else
         {
             Iterator<Marker> markerIterator = markers.iterator();
+            markerIterator.next().setPosition(new Position(scaleLocation, 0));
             markerIterator.next().setPosition(new Position(rotationLocation, 0));
         }
 
         Iterator<Marker> markerIterator = this.getControlPointLayer().getMarkers().iterator();
+        ((ControlPointMarker) markerIterator.next()).size = text.getTextSize();
         ((ControlPointMarker) markerIterator.next()).rotation = text.getHeading();
 
         this.updateOrientationLine(new Position(centerLocation, 0), new Position(rotationLocation, 0));
