@@ -374,16 +374,14 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         this.accessoryLayer.setValue(AVKey.IGNORE, true);
 
         // Set up the Path for the rotation line.
-        ShapeAttributes lineAttrs = makeRotationLineAttributes();
-        java.util.List<Position> lineLocations = new ArrayList<Position>(2);
-        lineLocations.add(Position.ZERO);
-        lineLocations.add(Position.ZERO);
-        Path rotationLine = new Path(lineLocations);
-        rotationLine.setFollowTerrain(true);
-        rotationLine.setPathType(AVKey.GREAT_CIRCLE);
-        rotationLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-        rotationLine.setAttributes(lineAttrs);
+        ShapeAttributes rotLineAttrs = makeRotationLineAttributes();
+        Path rotationLine = createAccessoryLine(rotLineAttrs);
         this.accessoryLayer.addRenderable(rotationLine);
+
+        // Set up the Path for the utility line.
+        ShapeAttributes utilLineAttrs = makeUtilityLineAttributes();
+        Path utilityLine = createAccessoryLine(utilLineAttrs);
+        this.accessoryLayer.addRenderable(utilityLine);
 
         // Create a layer to hold the editing annotations.
         this.annotationLayer = new RenderableLayer();
@@ -418,6 +416,27 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         lineAttrs.setOutlineMaterial(Material.GREEN);
         lineAttrs.setOutlineWidth(2);
         return lineAttrs;
+    }
+
+    protected ShapeAttributes makeUtilityLineAttributes()
+    {
+        ShapeAttributes lineAttrs = new BasicShapeAttributes();
+        lineAttrs.setOutlineMaterial(Material.GREEN);
+        lineAttrs.setOutlineWidth(2);
+        return lineAttrs;
+    }
+
+    protected Path createAccessoryLine(ShapeAttributes lineAttrs)
+    {
+        java.util.List<Position> lineLocations = new ArrayList<Position>(2);
+        lineLocations.add(Position.ZERO);
+        lineLocations.add(Position.ZERO);
+        Path rotationLine = new Path(lineLocations);
+        rotationLine.setFollowTerrain(true);
+        rotationLine.setPathType(AVKey.GREAT_CIRCLE);
+        rotationLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+        rotationLine.setAttributes(lineAttrs);
+        return rotationLine;
     }
 
     protected void makeControlPointAttributes()
@@ -1319,48 +1338,52 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
     }
 
     /**
-     * Updates the line designating the shape's central axis.
+     * Updates the accessory-line designating the shape's central axis.
      *
+     * @param index          the index of the line in the accessory-layer to update.
      * @param centerPosition the shape's center location and altitude at which to place one of the line's end points.
      * @param controlPoint   the shape orientation control point.
      */
-    protected void updateOrientationLine(Position centerPosition, Position controlPoint)
+    protected void updateAccessoryLine(int index, Position centerPosition, Position controlPoint)
     {
-        Path rotationLine = (Path) this.getAccessoryLayer().getRenderables().iterator().next();
-
-        double cAltitude = centerPosition.getAltitude();
-        double rAltitude = controlPoint.getAltitude();
-        if (this.getShapeAltitudeMode() == WorldWind.RELATIVE_TO_GROUND)
+        Path accessoryLine = null;
+        Iterator<Renderable> renderableIterator = this.getAccessoryLayer().getRenderables().iterator();
+        for (int i = 0; i <= index && renderableIterator.hasNext(); i++)
         {
-            rotationLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
-            rotationLine.setFollowTerrain(true);
-
-            // Set the line's altitude relative to the ground.
-            cAltitude = centerPosition.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
-                centerPosition.getLatitude(), centerPosition.getLongitude());
-            rAltitude = controlPoint.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
-                controlPoint.getLatitude(), controlPoint.getLongitude());
-            // Path does not incorporate vertical exaggeration, but airspace shapes do. Compensate for that difference here.
-            cAltitude *= this.getWwd().getSceneController().getVerticalExaggeration();
-            rAltitude *= this.getWwd().getSceneController().getVerticalExaggeration();
-            // Add a little altitude so that the line isn't lost during depth buffering.
-            cAltitude += 100;
-            rAltitude += 100;
-        }
-        else if (this.getShapeAltitudeMode() == WorldWind.CLAMP_TO_GROUND)
-        {
-            rotationLine.setSurfacePath(true);
-        }
-        else
-        {
-            rotationLine.setAltitudeMode(WorldWind.ABSOLUTE);
-            rotationLine.setFollowTerrain(false);
+            accessoryLine = (Path)renderableIterator.next();
         }
 
-        java.util.List<Position> linePositions = new ArrayList<Position>(2);
-        linePositions.add(new Position(centerPosition, cAltitude));
-        linePositions.add(new Position(controlPoint, rAltitude));
-        rotationLine.setPositions(linePositions);
+        if (accessoryLine != null)
+        {
+            double cAltitude = centerPosition.getAltitude();
+            double rAltitude = controlPoint.getAltitude();
+            if (this.getShapeAltitudeMode() == WorldWind.RELATIVE_TO_GROUND)
+            {
+                accessoryLine.setAltitudeMode(WorldWind.RELATIVE_TO_GROUND);
+                accessoryLine.setFollowTerrain(true);
+
+                // Add a little altitude so that the line isn't lost during depth buffering.
+                cAltitude = 100 + centerPosition.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
+                    centerPosition.getLatitude(), centerPosition.getLongitude());
+                rAltitude = 100 + controlPoint.getAltitude() - this.getWwd().getModel().getGlobe().getElevation(
+                    controlPoint.getLatitude(), controlPoint.getLongitude());
+            }
+            else if (this.getShapeAltitudeMode() == WorldWind.CLAMP_TO_GROUND)
+            {
+                accessoryLine.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
+                accessoryLine.setFollowTerrain(true);
+            }
+            else
+            {
+                accessoryLine.setAltitudeMode(WorldWind.ABSOLUTE);
+                accessoryLine.setFollowTerrain(false);
+            }
+
+            java.util.List<Position> linePositions = new ArrayList<Position>(2);
+            linePositions.add(new Position(centerPosition, cAltitude));
+            linePositions.add(new Position(controlPoint, rAltitude));
+            accessoryLine.setPositions(linePositions);
+        }
     }
 
     /**
@@ -1892,7 +1915,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).rotation = heading;
 
         // Update the rotation orientation line.
-        this.updateOrientationLine(new Position(polygonCenter, centerAltitude),
+        this.updateAccessoryLine(0, new Position(polygonCenter, centerAltitude),
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
@@ -2073,7 +2096,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
 
         // Update the rotation orientation line.
         double centerAltitude = this.getControlPointAltitude(cylinder.getCenter());
-        this.updateOrientationLine(new Position(cylinder.getCenter(), centerAltitude),
+        this.updateAccessoryLine(0, new Position(cylinder.getCenter(), centerAltitude),
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
@@ -2204,7 +2227,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
 
         // Update the rotation orientation line.
         double centerAltitude = this.getControlPointAltitude(cylinder.getCenter());
-        this.updateOrientationLine(new Position(cylinder.getCenter(), centerAltitude),
+        this.updateAccessoryLine(0, new Position(cylinder.getCenter(), centerAltitude),
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
@@ -2378,7 +2401,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = width;
         ((ControlPointMarker) markerIterator.next()).rotation = this.normalizedHeading(orbitHeading, Angle.ZERO);
 
-        this.updateOrientationLine(new Position(center, centerAltitude),
+        this.updateAccessoryLine(0, new Position(center, centerAltitude),
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
@@ -2533,7 +2556,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = route.getWidth();
         ((ControlPointMarker) markerIterator.next()).rotation = heading;
 
-        this.updateOrientationLine(new Position(routeCenter, centerAltitude),
+        this.updateAccessoryLine(0, new Position(routeCenter, centerAltitude),
             new Position(rotationControlLocation, rotationControlAltitude));
     }
 
@@ -2852,7 +2875,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         if (markers == null)
             this.getControlPointLayer().setMarkers(controlPoints);
 
-        this.updateOrientationLine(new Position(trackCenter, trackCenterAltitude),
+        this.updateAccessoryLine(0, new Position(trackCenter, trackCenterAltitude),
             new Position(rotationLocation, rotationAltitude));
 
         markers = this.getControlPointLayer().getMarkers();
@@ -2990,7 +3013,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).rotation = heading;
 
         // Update the rotation orientation line.
-        this.updateOrientationLine(new Position(polygonCenter, 0),
+        this.updateAccessoryLine(0, new Position(polygonCenter, 0),
             new Position(rotationControlLocation, 0));
     }
 
@@ -3103,7 +3126,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = square.getSize();
         ((ControlPointMarker) markerIterator.next()).rotation = square.getHeading();
 
-        this.updateOrientationLine(new Position(square.getCenter(), 0), new Position(rotationLocation, 0));
+        this.updateAccessoryLine(0, new Position(square.getCenter(), 0), new Position(rotationLocation, 0));
     }
 
     protected void reshapeSurfaceQuad(Position terrainPosition, ControlPointMarker controlPoint)
@@ -3181,7 +3204,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = quad.getHeight();
         ((ControlPointMarker) markerIterator.next()).rotation = quad.getHeading();
 
-        this.updateOrientationLine(new Position(quad.getCenter(), 0), new Position(rotationLocation, 0));
+        this.updateAccessoryLine(0, new Position(quad.getCenter(), 0), new Position(rotationLocation, 0));
     }
 
     protected void reshapeSurfaceEllipse(Position terrainPosition, ControlPointMarker controlPoint)
@@ -3263,7 +3286,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = ellipse.getMinorRadius();
         ((ControlPointMarker) markerIterator.next()).rotation = ellipse.getHeading();
 
-        this.updateOrientationLine(new Position(ellipse.getCenter(), 0), new Position(rotationLocation, 0));
+        this.updateAccessoryLine(0, new Position(ellipse.getCenter(), 0), new Position(rotationLocation, 0));
     }
 
     protected void reshapeAnalyticSurface(Position terrainPosition, ControlPointMarker controlPoint)
@@ -3420,12 +3443,12 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
 
         LatLon scaleLocation = LatLon.greatCircleEndPosition(
             centerLocation,
-            Angle.fromDegrees(text.getHeading().degrees),
+            Angle.fromDegrees(text.getHeading().degrees).add(Angle.fromDegrees(45)),
             Angle.fromRadians(1.5 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
 
         LatLon rotationLocation = LatLon.greatCircleEndPosition(
             centerLocation,
-            Angle.fromDegrees(text.getHeading().degrees).add(Angle.fromDegrees(45)),
+            Angle.fromDegrees(text.getHeading().degrees),
             Angle.fromRadians(1.5 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
 
         Iterable<Marker> markers = this.getControlPointLayer().getMarkers();
@@ -3452,6 +3475,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).size = text.getTextSize();
         ((ControlPointMarker) markerIterator.next()).rotation = text.getHeading();
 
-        this.updateOrientationLine(new Position(centerLocation, 0), new Position(rotationLocation, 0));
+        this.updateAccessoryLine(0, new Position(centerLocation, 0), new Position(rotationLocation, 0));
+        this.updateAccessoryLine(1, new Position(centerLocation, 0), new Position(scaleLocation, 0));
     }
 }
