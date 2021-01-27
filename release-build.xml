@@ -66,6 +66,7 @@
         <compileJava srcdir="${worldwind.src.dir}" classdir="${worldwind.classes.dir}/debug" debug="true"
                      jdk="${worldwind.jdk}">
             <pathelements>
+                <pathelement location="${basedir}/jackson-core-asl.jar"/>
                 <pathelement location="${basedir}/jogl-all.jar"/>
                 <pathelement location="${basedir}/gluegen-rt.jar"/>
                 <pathelement location="${basedir}/gdal.jar"/>
@@ -78,6 +79,7 @@
         <compileJava srcdir="${worldwind.src.dir}" classdir="${worldwind.classes.dir}/release" debug="false"
                      jdk="${worldwind.jdk}">
             <pathelements>
+                <pathelement location="${basedir}/jackson-core-asl.jar"/>
                 <pathelement location="${basedir}/jogl-all.jar"/>
                 <pathelement location="${basedir}/gluegen-rt.jar"/>
                 <pathelement location="${basedir}/gdal.jar"/>
@@ -122,6 +124,7 @@
                 <exclude name="gov/nasa/worldwind/formats/**"/>
             </packageset>
             <classpath>
+                <pathelement location="jackson-core-asl.jar"/>
                 <pathelement location="jogl-all.jar"/>
                 <pathelement location="gluegen-rt.jar"/>
                 <pathelement location="gdal.jar"/>
@@ -173,6 +176,7 @@
                      jdk="${worldwind.jdk}">
             <pathelements>
                 <pathelement location="${worldwind.classes.dir}/debug"/>
+                <pathelement location="${basedir}/jackson-core-asl.jar"/>
                 <pathelement location="${basedir}/jogl-all.jar"/>
                 <pathelement location="${basedir}/gluegen-rt.jar"/>
                 <pathelement location="${basedir}/gdal.jar"/>
@@ -192,6 +196,7 @@
                 <pathelement location="${worldwind.src.dir}"/>
                 <pathelement location="${worldwind.classes.dir}/test"/>
                 <pathelement location="${worldwind.classes.dir}/debug"/>
+                <pathelement location="${basedir}/jackson-core-asl.jar"/>
                 <pathelement location="${basedir}/jogl-all.jar"/>
                 <pathelement location="${basedir}/gluegen-rt.jar"/>
                 <pathelement location="${basedir}/gdal.jar"/>

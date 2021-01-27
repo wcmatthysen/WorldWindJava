@@ -88,20 +88,17 @@
             <jar jarfile="@{destdir}/worldwind.jar">
                 <manifest>
                     <attribute name="Permissions" value="all-permissions"/>
-                    <attribute name="Class-Path" value="jogl-all.jar gluegen-rt.jar gdal.jar"/>
+                    <attribute name="Class-Path" value="jackson-core-asl.jar jogl-all.jar gluegen-rt.jar gdal.jar"/>
                 </manifest>
                 <fileset dir="@{classdir}">
                     <include name="gov/nasa/worldwind/**/*.class"/>
                     <include name="com/zebraimaging/**/*.class"/>
-                    <include name="org/codehaus/jackson/**/*.class" unless="${worldwind.exclude.jackson}"/>
                     <type type="file"/>
                 </fileset>
                 <fileset dir="@{srcdir}">
                     <include name="gov/nasa/worldwind/**/*.java" if="@{debug}"/>
                     <include name="gov/nasa/worldwind/util/**/*.properties"/>
                     <include name="com/zebraimaging/**/*.java" if="@{debug}"/>
-                    <include name="org/codehaus/jackson/**/*.java" if="@{debug}"
-                             unless="${worldwind.exclude.jackson}"/>
                     <include name="config/**"/>
                     <include name="images/**"/>
                     <type type="file"/>
