@@ -360,7 +360,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         this.controlPointLayer = new MarkerLayer();
         this.controlPointLayer.setKeepSeparated(false);
         this.controlPointLayer.setValue(AVKey.IGNORE, true); // means "Don't show this layer in the layer manager."
-        if (this.shape instanceof SurfaceShape
+        if (this.shape instanceof SurfaceShape || this.shape instanceof SurfaceText
             || (this.shape instanceof Airspace && ((Airspace) this.shape).isDrawSurfaceShape()))
         {
             // This ensures that control points are always placed on the terrain for surface shapes.
@@ -1177,6 +1177,10 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             else if (this.getShape() instanceof AnalyticSurface)
                 this.reshapeAnalyticSurface(terrainPosition, controlPoint);
         }
+        else if (this.getShape() instanceof SurfaceText)
+        {
+            this.reshapeSurfaceText(terrainPosition, controlPoint);
+        }
     }
 
     /**
@@ -1218,6 +1222,10 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
                 this.updateSurfaceEllipseControlPoints();
             else if (this.getShape() instanceof AnalyticSurface)
                 this.updateAnalyticSurfaceControlPoints();
+        }
+        else if (this.getShape() instanceof SurfaceText)
+        {
+            this.updateSurfaceTextControlPoints();
         }
     }
 
@@ -1262,6 +1270,8 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             center = ((SurfaceQuad) this.getShape()).getCenter();
         else if (this.getShape() instanceof AnalyticSurface)
             center = ((AnalyticSurface) this.getShape()).getSector().getCentroid();
+        else if (this.getShape() instanceof SurfaceText)
+            center = ((SurfaceText) this.getShape()).getPosition();
 
         return center;
     }
@@ -1434,7 +1444,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             if (((Airspace) this.getShape()).getAltitudeDatum()[1].equals(AVKey.ABOVE_GROUND_LEVEL))
                 altitudeMode = WorldWind.RELATIVE_TO_GROUND;
         }
-        else if (this.getShape() instanceof SurfaceShape)
+        else if (this.getShape() instanceof SurfaceShape || this.getShape() instanceof SurfaceText)
         {
             altitudeMode = WorldWind.CLAMP_TO_GROUND;
         }
@@ -3365,5 +3375,53 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         Iterator<Marker> markerIterator = this.getControlPointLayer().getMarkers().iterator();
         ((ControlPointMarker) markerIterator.next()).size = sectorWidth;
         ((ControlPointMarker) markerIterator.next()).size = sectorHeight;
+    }
+
+    protected void reshapeSurfaceText(Position terrainPosition, ControlPointMarker controlPoint)
+    {
+        if (controlPoint == null)
+            return; // Cannot add locations to this shape.
+
+        SurfaceText text = (SurfaceText) this.getShape();
+
+        if (controlPoint.getPurpose().equals(ROTATION))
+        {
+            Angle oldHeading = LatLon.greatCircleAzimuth(text.getPosition(), this.getPreviousPosition());
+            Angle deltaHeading = LatLon.greatCircleAzimuth(text.getPosition(), terrainPosition).subtract(oldHeading);
+            text.setHeading(this.normalizedHeading(text.getHeading(), deltaHeading));
+        }
+    }
+
+    protected void updateSurfaceTextControlPoints()
+    {
+        SurfaceText text = (SurfaceText) this.getShape();
+
+        LatLon centerLocation = text.getPosition();
+        double textSizeInMeters = text.getTextSize();
+
+        LatLon rotationLocation = LatLon.greatCircleEndPosition(
+            centerLocation,
+            Angle.fromDegrees(text.getHeading().degrees),
+            Angle.fromRadians(2 * textSizeInMeters / this.getWwd().getModel().getGlobe().getEquatorialRadius()));
+
+        Iterable<Marker> markers = this.getControlPointLayer().getMarkers();
+        if (markers == null)
+        {
+            List<Marker> markerList = new ArrayList<Marker>(1);
+            Position rotationPosition = new Position(rotationLocation, 0);
+            markerList.add(this.makeControlPoint(rotationPosition, this.getAngleControlPointAttributes(), 0, ROTATION));
+
+            this.getControlPointLayer().setMarkers(markerList);
+        }
+        else
+        {
+            Iterator<Marker> markerIterator = markers.iterator();
+            markerIterator.next().setPosition(new Position(rotationLocation, 0));
+        }
+
+        Iterator<Marker> markerIterator = this.getControlPointLayer().getMarkers().iterator();
+        ((ControlPointMarker) markerIterator.next()).rotation = text.getHeading();
+
+        this.updateOrientationLine(new Position(centerLocation, 0), new Position(rotationLocation, 0));
     }
 }
