@@ -391,7 +391,7 @@ public class AnalyticSurfaceLegend implements Renderable
 
         if (titleLabel != null)
         {
-            list.add(new LabelRenderable(this, titleLabel, width / 2d, 0d, AVKey.CENTER, AVKey.BOTTOM));
+            list.add(new LabelRenderable(this, titleLabel, 0d, 0d, AVKey.LEFT, AVKey.BOTTOM));
         }
 
         return list;
