@@ -73,7 +73,7 @@ public class FlyToOrbitViewAnimator extends CompoundAnimator
         Angle beginPitch, Angle endPitch,
         double beginZoom, double endZoom, long timeToMove, int altitudeMode)
     {
-        OnSurfacePositionAnimator centerAnimator = new OnSurfacePositionAnimator(orbitView.getGlobe(),
+        OnSurfacePositionAnimator centerAnimator = new OnSurfacePositionAnimator(orbitView,
             new ScheduledInterpolator(timeToMove),
             beginCenterPos, endCenterPos,
             OrbitViewPropertyAccessor.createCenterPositionAccessor(
@@ -106,17 +106,17 @@ public class FlyToOrbitViewAnimator extends CompoundAnimator
 
     protected static class OnSurfacePositionAnimator extends PositionAnimator
     {
-        Globe globe;
+        OrbitView orbitView;
         int altitudeMode;
         boolean useMidZoom = true;
 
-        public OnSurfacePositionAnimator(Globe globe, Interpolator interpolator,
+        public OnSurfacePositionAnimator(OrbitView orbitView, Interpolator interpolator,
             Position begin,
             Position end,
             PropertyAccessor.PositionAccessor propertyAccessor, int altitudeMode)
         {
             super(interpolator, begin, end, propertyAccessor);
-            this.globe = globe;
+            this.orbitView = orbitView;
             this.altitudeMode = altitudeMode;
         }
 
@@ -140,23 +140,27 @@ public class FlyToOrbitViewAnimator extends CompoundAnimator
             double endElevation = 0.0;
             boolean overrideEndElevation = false;
 
-            if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND)
+            Globe globe = this.orbitView.getGlobe();
+            if (globe != null)
             {
-                overrideEndElevation = true;
-                endElevation = this.globe.getElevation(getEnd().getLatitude(), getEnd().getLongitude());
-            }
-            else if (this.altitudeMode == WorldWind.RELATIVE_TO_GROUND)
-            {
-                overrideEndElevation = true;
-                endElevation = this.globe.getElevation(getEnd().getLatitude(), getEnd().getLongitude())
-                    + getEnd().getAltitude();
-            }
+                if (this.altitudeMode == WorldWind.CLAMP_TO_GROUND)
+                {
+                    overrideEndElevation = true;
+                    endElevation = globe.getElevation(getEnd().getLatitude(), getEnd().getLongitude());
+                }
+                else if (this.altitudeMode == WorldWind.RELATIVE_TO_GROUND)
+                {
+                    overrideEndElevation = true;
+                    endElevation = globe.getElevation(getEnd().getLatitude(), getEnd().getLongitude())
+                        + getEnd().getAltitude();
+                }
 
-            if (overrideEndElevation)
-            {
-                LatLon ll = pos; // Use interpolated lat/lon.
-                double e1 = getBegin().getElevation();
-                pos = new Position(ll, (1 - latLonInterpolant) * e1 + latLonInterpolant * endElevation);
+                if (overrideEndElevation)
+                {
+                    LatLon ll = pos; // Use interpolated lat/lon.
+                    double e1 = getBegin().getElevation();
+                    pos = new Position(ll, (1 - latLonInterpolant) * e1 + latLonInterpolant * endElevation);
+                }
             }
 
             return pos;
