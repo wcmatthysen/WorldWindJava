@@ -1905,6 +1905,10 @@ public class MeasureTool extends AVListImpl implements Disposable {
                     ((SurfaceEllipse) this.surfaceShape).setCenter(this.shapeCenterPosition);
                     ((SurfaceEllipse) this.surfaceShape).setRadii(this.shapeRectangle.width / 2,
                             this.shapeRectangle.height / 2);
+                    if (Math.abs(this.shapeOrientation.getDegrees()) <= 0.0001)
+                    {
+                        this.shapeOrientation = Angle.ZERO;
+                    }
                     ((SurfaceEllipse) this.surfaceShape).setHeading(this.shapeOrientation);
                 }
                 // Update position from shape list with zero elevation
