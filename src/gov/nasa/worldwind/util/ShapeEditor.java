@@ -29,6 +29,7 @@
 package gov.nasa.worldwind.util;
 
 import gov.nasa.worldwind.*;
+import gov.nasa.worldwind.analytics.*;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.*;
 import gov.nasa.worldwind.geom.*;
@@ -130,7 +131,7 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
     /**
      * Represents editor control points.
      */
-    protected static class ControlPointMarker extends BasicMarker
+    public static class ControlPointMarker extends BasicMarker
     {
         /**
          * The control point's ID, which is typically its list index when the shape has a list of locations.
@@ -1001,6 +1002,21 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             return new SurfacePolyline((SurfacePolyline) this.getShape());
         else if (this.getShape() instanceof SurfacePolygon)
             return new SurfacePolygon((SurfacePolygon) this.getShape());
+//        // The shadow is unnecessary for an AnalyticSurface object.
+//        // However, uncomment this block to see how it would look.
+//        else if (this.getShape() instanceof AnalyticSurface)
+//        {
+//            AnalyticSurface surface = (AnalyticSurface)this.getShape();
+//            int[] dimensions = surface.getDimensions();
+//            return new AnalyticSurface
+//            (
+//                surface.getSector(),
+//                surface.getAltitude(),
+//                dimensions[0],
+//                dimensions[1],
+//                surface.getGridValues()
+//            );
+//        }
 
         return null;
     }
@@ -1158,6 +1174,8 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
                 this.reshapeSurfaceQuad(terrainPosition, controlPoint);
             else if (this.getShape() instanceof SurfaceEllipse)
                 this.reshapeSurfaceEllipse(terrainPosition, controlPoint);
+            else if (this.getShape() instanceof AnalyticSurface)
+                this.reshapeAnalyticSurface(terrainPosition, controlPoint);
         }
     }
 
@@ -1198,6 +1216,8 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
                 this.updateSurfaceQuadControlPoints();
             else if (this.getShape() instanceof SurfaceEllipse)
                 this.updateSurfaceEllipseControlPoints();
+            else if (this.getShape() instanceof AnalyticSurface)
+                this.updateAnalyticSurfaceControlPoints();
         }
     }
 
@@ -1240,6 +1260,8 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
             center = ((SurfaceEllipse) this.getShape()).getCenter();
         else if (this.getShape() instanceof SurfaceQuad)
             center = ((SurfaceQuad) this.getShape()).getCenter();
+        else if (this.getShape() instanceof AnalyticSurface)
+            center = ((AnalyticSurface) this.getShape()).getSector().getCentroid();
 
         return center;
     }
@@ -3232,5 +3254,116 @@ public class ShapeEditor implements SelectListener, PropertyChangeListener
         ((ControlPointMarker) markerIterator.next()).rotation = ellipse.getHeading();
 
         this.updateOrientationLine(new Position(ellipse.getCenter(), 0), new Position(rotationLocation, 0));
+    }
+
+    protected void reshapeAnalyticSurface(Position terrainPosition, ControlPointMarker controlPoint)
+    {
+        if (controlPoint == null)
+            return; // Cannot add locations to this shape.
+
+        AnalyticSurface surface = (AnalyticSurface) this.getShape();
+        Sector sector = surface.getSector();
+        LatLon centroid = sector.getCentroid();
+
+        Globe globe = getWwd().getModel().getGlobe();
+        double globeRadius = globe.getRadiusAt(centroid);
+
+        Vec4 terrainPoint = globe.computeEllipsoidalPointFromLocation(terrainPosition);
+        Vec4 previousPoint = globe.computeEllipsoidalPointFromLocation(getPreviousPosition());
+        Vec4 delta = terrainPoint.subtract3(previousPoint);
+
+        Vec4 centerPoint = globe.computeEllipsoidalPointFromLocation(centroid);
+        Vec4 markerPoint = globe.computeEllipsoidalPointFromLocation(controlPoint.getPosition());
+        Vec4 vMarker = markerPoint.subtract3(centerPoint).normalize3();
+
+        LatLon sw = sector.getCorners()[0];
+        LatLon se = sector.getCorners()[1];
+        LatLon ne = sector.getCorners()[2];
+        LatLon nw = sector.getCorners()[3];
+
+        if (controlPoint.getPurpose().equals(WIDTH))
+        {
+            double sectorWidth = LatLon.greatCircleDistance(nw, ne).radians * globeRadius;
+            double newWidth = sectorWidth + delta.dot3(vMarker);
+            if (newWidth > 0)
+            {
+                double pathLength = (0.5 * newWidth) / globeRadius;
+                LatLon rightMiddle = LatLon.greatCircleEndPosition(centroid, Math.PI / 2.0, pathLength);
+                double longitudeDiff = Math.abs(rightMiddle.longitude.radians - centroid.longitude.radians);
+                Sector newSector = Sector.fromRadians
+                (
+                    sw.latitude.radians,
+                    nw.latitude.radians,
+                    Angle.fromRadiansLongitude(centroid.longitude.radians - longitudeDiff).radians,
+                    Angle.fromRadiansLongitude(centroid.longitude.radians + longitudeDiff).radians
+                );
+                surface.setSector(newSector);
+            }
+        }
+        else if (controlPoint.getPurpose().equals(HEIGHT))
+        {
+            double sectorHeight = LatLon.greatCircleDistance(ne, se).radians * globeRadius;
+            double newHeight = sectorHeight + delta.dot3(vMarker);
+            if (newHeight > 0)
+            {
+                double pathLength = (0.5 * newHeight) / globeRadius;
+                LatLon topMiddle = LatLon.greatCircleEndPosition(centroid, 0, pathLength);
+                double latitudeDiff = Math.abs(topMiddle.latitude.radians - centroid.latitude.radians);
+                Sector newSector = Sector.fromRadians
+                (
+                    Angle.fromRadiansLatitude(centroid.latitude.radians - latitudeDiff).radians,
+                    Angle.fromRadiansLatitude(centroid.latitude.radians + latitudeDiff).radians,
+                    nw.longitude.radians,
+                    ne.longitude.radians
+                );
+                surface.setSector(newSector);
+            }
+        }
+    }
+
+    protected void updateAnalyticSurfaceControlPoints()
+    {
+        AnalyticSurface surface = (AnalyticSurface) this.getShape();
+
+        Globe globe = getWwd().getModel().getGlobe();
+
+        Sector sector = surface.getSector();
+        LatLon centroid = sector.getCentroid();
+
+        LatLon sw = sector.getCorners()[0];
+        LatLon se = sector.getCorners()[1];
+        LatLon ne = sector.getCorners()[2];
+        LatLon nw = sector.getCorners()[3];
+
+        LatLon widthLocation = LatLon.interpolateGreatCircle(0.5, ne, se);
+        LatLon heightLocation = LatLon.interpolateGreatCircle(0.5, nw, ne);
+
+        Iterable<Marker> markers = this.getControlPointLayer().getMarkers();
+        if (markers == null)
+        {
+            List<Marker> markerList = new ArrayList<Marker>(2);
+
+            Position widthPosition = new Position(widthLocation, 0);
+            markerList.add(makeControlPoint(widthPosition, this.getSizeControlPointAttributes(), 0, WIDTH));
+
+            Position heightPosition = new Position(heightLocation, 0);
+            markerList.add(makeControlPoint(heightPosition, this.getSizeControlPointAttributes(), 1, HEIGHT));
+
+            this.getControlPointLayer().setMarkers(markerList);
+        }
+        else
+        {
+            Iterator<Marker> markerIterator = markers.iterator();
+            markerIterator.next().setPosition(new Position(widthLocation, 0));
+            markerIterator.next().setPosition(new Position(heightLocation, 0));
+        }
+
+        double globeRadius = globe.getRadiusAt(centroid);
+        double sectorWidth = LatLon.greatCircleDistance(nw, ne).radians * globeRadius;
+        double sectorHeight = LatLon.greatCircleDistance(ne, se).radians * globeRadius;
+
+        Iterator<Marker> markerIterator = this.getControlPointLayer().getMarkers().iterator();
+        ((ControlPointMarker) markerIterator.next()).size = sectorWidth;
+        ((ControlPointMarker) markerIterator.next()).size = sectorHeight;
     }
 }

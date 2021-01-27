@@ -30,6 +30,7 @@ package gov.nasa.worldwind.analytics;
 import com.jogamp.common.nio.Buffers;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.*;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.pick.PickSupport;
 import gov.nasa.worldwind.render.*;
@@ -48,7 +49,7 @@ import java.util.List;
  * accepting <code>width</code> and <code>height</code>, or by invoking {@link #setDimensions(int, int)}. Each grid
  * point has the following set of attributes: <ul> <li>Scalar value : the grid point's height relative to the surface's
  * base altitude, both in meters</li> <li>Color : the grid point's RGBA color components</li> </ul> Callers specify the
- * attributes at each grid point by invoking {@link #setValues(Iterable)} with an {@link Iterable} of {@link
+ * attributes at each grid point by invoking {@link #setGridValues(Iterable)} with an {@link Iterable} of {@link
  * GridPointAttributes}. Grid points are assigned attributes from this iterable staring at the upper left hand corner,
  * and proceeding in row-first order across the grid. The iterable should contain at least <code>width * height</code>
  * values, where width and height are the AnalyticSurface's grid dimensions. If the caller does not specify any
@@ -72,7 +73,7 @@ import java.util.List;
  * @author dcollins
  * @version $Id: AnalyticSurface.java 3020 2015-04-14 21:23:03Z dcollins $
  */
-public class AnalyticSurface implements Renderable, PreRenderable
+public class AnalyticSurface extends AbstractSurfaceShape
 {
     /** GridPointAttributes defines the properties associated with a single grid point of an AnalyticSurface. */
     public interface GridPointAttributes
@@ -287,6 +288,64 @@ public class AnalyticSurface implements Renderable, PreRenderable
         this.setExpired(true);
     }
 
+    public Position getReferencePosition()
+    {
+        return new Position(this.sector.getCentroid(), 0);
+    }
+
+    public Iterable<? extends LatLon> getLocations(Globe globe)
+    {
+        if (this.sector.equals(Sector.EMPTY_SECTOR))
+            return null;
+
+        LatLon[] locations = new LatLon[5];
+        System.arraycopy(this.sector.getCorners(), 0, locations, 0, 4);
+        locations[4] = locations[0];
+
+        return Arrays.asList(locations);
+    }
+
+    protected List<List<LatLon>> createGeometry(Globe globe, double edgeIntervalsPerDegree)
+    {
+        Iterable<? extends LatLon> originalLocations = this.getLocations(globe);
+        if (originalLocations == null)
+            return null;
+
+        ArrayList<LatLon> drawLocations = new ArrayList<LatLon>();
+        this.generateIntermediateLocations(originalLocations, edgeIntervalsPerDegree, false, drawLocations);
+
+        ArrayList<List<LatLon>> geom = new ArrayList<List<LatLon>>();
+        geom.add(drawLocations);
+
+        return geom;
+    }
+
+    protected void doMoveTo(Position oldReferencePosition, Position newReferencePosition)
+    {
+        LatLon[] locations = new LatLon[]
+            {
+                new LatLon(this.sector.getMinLatitude(), this.sector.getMinLongitude()),
+                new LatLon(this.sector.getMaxLatitude(), this.sector.getMaxLongitude())
+            };
+
+        LatLon[] newLocations = new LatLon[2];
+        for (int i = 0; i < 2; i++)
+        {
+            Angle heading = LatLon.greatCircleAzimuth(oldReferencePosition, locations[i]);
+            Angle pathLength = LatLon.greatCircleDistance(oldReferencePosition, locations[i]);
+            newLocations[i] = LatLon.greatCircleEndPosition(newReferencePosition, heading, pathLength);
+        }
+
+        this.setSector(new Sector(
+            newLocations[0].getLatitude(), newLocations[1].getLatitude(),
+            newLocations[0].getLongitude(), newLocations[1].getLongitude()));
+    }
+
+    protected void doMoveTo(Globe globe, Position oldReferencePosition, Position newReferencePosition)
+    {
+        this.doMoveTo(oldReferencePosition, newReferencePosition);
+    }
+
     /**
      * Returns this surface's base altitude, in meters.
      *
@@ -380,12 +439,12 @@ public class AnalyticSurface implements Renderable, PreRenderable
     }
 
     /**
-     * Returns the surface's iterable of {@link GridPointAttributes}. See {@link #setValues(Iterable)} for details on
+     * Returns the surface's iterable of {@link GridPointAttributes}. See {@link #setGridValues(Iterable)} for details on
      * how this iterable is interpreted by AnalyticSurface.
      *
      * @return this surface's GridPointAttributes.
      */
-    public Iterable<? extends GridPointAttributes> getValues()
+    public Iterable<? extends GridPointAttributes> getGridValues()
     {
         return this.values;
     }
@@ -401,7 +460,7 @@ public class AnalyticSurface implements Renderable, PreRenderable
      *
      * @throws IllegalArgumentException if the iterable is null.
      */
-    public void setValues(Iterable<? extends GridPointAttributes> iterable)
+    public void setGridValues(Iterable<? extends GridPointAttributes> iterable)
     {
         if (iterable == null)
         {

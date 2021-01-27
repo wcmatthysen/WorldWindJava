@@ -141,7 +141,7 @@ public class ContourBuilderExample extends ApplicationTemplate
             surface.setSurfaceAttributes(attrs);
             surface.setSector(this.arraySector);
             surface.setDimensions(this.arrayWidth, this.arrayHeight);
-            surface.setValues(pointAttrs);
+            surface.setGridValues(pointAttrs);
             surface.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
             layer.addRenderable(surface);
         }
