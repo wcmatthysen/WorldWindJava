@@ -51,7 +51,7 @@ public class JOGLVersionInfo {
             classLoader.loadClass(pkgName + "." + className);
 
             // TODO: message logging
-            p = classLoader.getDefinedPackage(pkgName);
+            p = Package.getPackage(pkgName);
             if (p == null) {
                 System.out.println("WARNING: Package.getPackage(" + pkgName + ") is null");
             }

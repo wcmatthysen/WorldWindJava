@@ -136,7 +136,7 @@ public class WorldWindDiagnostics {
             try {
                 getClass().getClassLoader().loadClass(pkgName + ".GL");
 
-                Package p = getClass().getClassLoader().getDefinedPackage(pkgName);
+                Package p = Package.getPackage(pkgName);
                 if (p == null) {
                     sb.append("WARNING: Package.getPackage(" + pkgName + ") is null\n");
                 } else {
