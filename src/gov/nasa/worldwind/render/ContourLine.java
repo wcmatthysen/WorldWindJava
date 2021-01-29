@@ -27,7 +27,6 @@
  */
 package gov.nasa.worldwind.render;
 
-import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.geom.*;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.util.*;
@@ -44,13 +43,14 @@ import java.util.List;
  * @version $Id: ContourLine.java 1171 2013-02-11 21:45:02Z dcollins $
  */
 public class ContourLine implements Renderable {
-
+    
     private double elevation;
     private Sector sector;
     private Color color = Color.CYAN;
     private double lineWidth = 1;
     private boolean enabled = true;
     private final ArrayList<Renderable> renderables = new ArrayList<>();
+    private final ShapeAttributes lineAttributes = new BasicShapeAttributes();
     private boolean viewClippingEnabled = false;
     protected Object globeStateKey;
 
@@ -152,15 +152,12 @@ public class ContourLine implements Renderable {
             Logging.logger().severe(msg);
             throw new IllegalArgumentException(msg);
         }
-
-        if (!this.color.equals(color)) {
-            this.color = color;
-            for (Renderable r : this.getRenderables()) {
-                if (r instanceof Path) {
-                    ((Path) r).getActiveAttributes().setOutlineMaterial(new Material(color));
-                }
-            }
-        }
+        
+        this.color = color;
+        this.lineAttributes.setOutlineMaterial(new Material(this.color));
+        this.lineAttributes.setOutlineOpacity(this.color.getAlpha() / 255.0);
+        this.lineAttributes.setInteriorMaterial(this.lineAttributes.getOutlineMaterial());
+        this.lineAttributes.setInteriorOpacity(this.lineAttributes.getOutlineOpacity());
     }
 
     /**
@@ -178,14 +175,8 @@ public class ContourLine implements Renderable {
      * @param width the contour line width.
      */
     public void setLineWidth(double width) {
-        if (this.lineWidth != width) {
-            this.lineWidth = width;
-            for (Renderable r : this.getRenderables()) {
-                if (r instanceof Path) {
-                    ((Path) r).getActiveAttributes().setOutlineWidth(width);
-                }
-            }
-        }
+        this.lineWidth = width;
+        this.lineAttributes.setOutlineWidth(this.lineWidth);
     }
 
     public boolean isEnabled() {
@@ -423,10 +414,7 @@ public class ContourLine implements Renderable {
             line = new Path(positions);
             line.setNumSubsegments(0);
             line.setSurfacePath(true);
-            BasicShapeAttributes attrs = new BasicShapeAttributes();
-            attrs.setOutlineWidth(this.getLineWidth());
-            attrs.setOutlineMaterial(new Material(this.getColor()));
-            line.setAttributes(attrs);
+            line.setAttributes(this.lineAttributes);
             this.getRenderables().add(line);
             count++;
         }
