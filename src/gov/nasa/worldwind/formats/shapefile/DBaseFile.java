@@ -291,7 +291,7 @@ public class DBaseFile extends AVListImpl
         }
 
         String contentType = connection.getContentType();
-        if (WWUtil.isEmpty(contentType))
+        if (WWUtil.isEmpty(contentType) || contentType.equals("content/unknown"))
             return null;
 
         for (String type : acceptedContentTypes)
