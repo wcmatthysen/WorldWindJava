@@ -43,6 +43,7 @@
     </Layer>
     <Layer href="config/Earth/BMNGWMSLayer2.xml" actuate="onLoad"/>
     <Layer href="config/Earth/LandsatI3WMSLayer2.xml" actuate="onLoad"/>
+    <!--<Layer href="config/Earth/Sentinel2.xml" actuate="onRequest"/>-->
     <!--<Layer href="config/Earth/USDANAIPWMSImageLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/USGSNAIPPlusLayer.xml" actuate="onRequest"/>
     <!--<Layer href="config/Earth/MSVirtualEarthAerialLayer.xml" actuate="onRequest"/>-->
